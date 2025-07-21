@@ -1,1 +1,50 @@
-const SCAN_URL_BASE = "https://script.google.com/macros/s/AKfycby47A__5YeAq6n04cBzJH_yaFdl4WB96Bqyp5Hg_YDk4shALnFdPlQOmvyk65X_My2kiA/exec?code=";
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>UCC 코드 스캔 결과</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding-top: 100px;
+    }
+    #result {
+      font-size: 64px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>UCC 코드 스캔 결과</h1>
+  <div id="result">결과 대기 중...</div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("code");
+
+    if (!code) {
+      document.getElementById("result").textContent = "코드 없음";
+    } else {
+      fetch("https://script.google.com/macros/s/AKfycby47A__5YeAq6n04cBzJH_yaFdl4WB96Bqyp5Hg_YDk4shALnFdPlQOmvyk65X_My2kiA/exec?code=" + encodeURIComponent(code))
+        .then(res => res.text())
+        .then(text => {
+          const result = document.getElementById("result");
+          if (text === "✓") {
+            result.textContent = "✓";
+            result.style.color = "green";
+          } else if (text === "DUP") {
+            result.textContent = "DUP";
+            result.style.color = "orange";
+          } else {
+            result.textContent = "❌";
+            result.style.color = "red";
+          }
+        })
+        .catch(() => {
+          document.getElementById("result").textContent = "에러 발생";
+        });
+    }
+  </script>
+</body>
+</html>
