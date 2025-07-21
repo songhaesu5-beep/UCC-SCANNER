@@ -3,11 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <title>UCC Scanner</title>
-  <script src="https://unpkg.com/html5-qrcode"></script>
+  <script src="https://unpkg.com/html5-qrcode@2.3.9/html5-qrcode.min.js"></script>
   <style>
     #reader {
       width: 100%;
+      min-height: 300px;
       margin: auto;
+      border: 2px dashed #999;
     }
     #feedback {
       font-size: 5em;
@@ -24,7 +26,6 @@
 
 <script>
 const SCAN_URL_BASE = "https://script.google.com/macros/s/AKfycby47A__5YeAq6n04cBzJH_yaFdl4WB96Bqyp5Hg_YDk4shALnFdPlQOmvyk65X_My2kiA/exec?code=";
-
 
 function startScanner() {
   const qrCodeScanner = new Html5Qrcode("reader");
