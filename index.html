@@ -7,12 +7,9 @@
   <style>
     #reader {
       width: 100%;
+      min-height: 300px;
       margin: auto;
       border: 2px dashed #999;
-    }
-    #reader__scan_region > div {
-      width: 600px !important;
-      height: 200px !important;
     }
     #feedback {
       font-size: 5em;
@@ -34,23 +31,14 @@ function startScanner() {
   const qrCodeScanner = new Html5Qrcode("reader");
   qrCodeScanner.start(
     { facingMode: "environment" },
-    {
-      fps: 10,
-      qrbox: { width: 600, height: 200 },
-      aspectRatio: 1.77 // 16:9
-    },
+    { fps: 10, qrbox: 250 },
     (code) => {
       qrCodeScanner.stop().then(() => {
         handleScan(code, qrCodeScanner);
       });
     },
-    (error) => {
-      console.warn("QR Error:", error);
-    }
-  ).catch((err) => {
-    console.error("Camera init failed:", err);
-    document.getElementById("feedback").innerText = "❌ 카메라 접근 실패";
-  });
+    (error) => {}
+  );
 }
 
 function handleScan(code, qrCodeScanner) {
@@ -71,7 +59,15 @@ function handleScan(code, qrCodeScanner) {
 
       setTimeout(() => {
         feedback.innerHTML = "";
-        startScanner();
+        qrCodeScanner.start(
+          { facingMode: "environment" },
+          { fps: 10, qrbox: 250 },
+          (newCode) => {
+            qrCodeScanner.stop().then(() => {
+              handleScan(newCode, qrCodeScanner);
+            });
+          }
+        );
       }, 1500);
     })
     .catch(() => {
@@ -80,7 +76,15 @@ function handleScan(code, qrCodeScanner) {
       feedback.style.color = "red";
       setTimeout(() => {
         feedback.innerHTML = "";
-        startScanner();
+        qrCodeScanner.start(
+          { facingMode: "environment" },
+          { fps: 10, qrbox: 250 },
+          (newCode) => {
+            qrCodeScanner.stop().then(() => {
+              handleScan(newCode, qrCodeScanner);
+            });
+          }
+        );
       }, 1500);
     });
 }
