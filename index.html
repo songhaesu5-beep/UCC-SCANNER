@@ -7,9 +7,12 @@
   <style>
     #reader {
       width: 100%;
-      height: auto;
       margin: auto;
       border: 2px dashed #999;
+    }
+    #reader__scan_region > div {
+      width: 600px !important;
+      height: 200px !important;
     }
     #feedback {
       font-size: 5em;
@@ -27,31 +30,27 @@
 <script>
 const SCAN_URL_BASE = "https://script.google.com/macros/s/AKfycby47A__5YeAq6n04cBzJH_yaFdl4WB96Bqyp5Hg_YDk4shALnFdPlQOmvyk65X_My2kiA/exec?code=";
 
-function getConfig() {
-  return {
-    fps: 10,
-    qrbox: { width: 600, height: 200 },
-    aspectRatio: 16 / 9,
-    videoConstraints: {
-      facingMode: "environment",
-      width: { ideal: 1280 },
-      height: { ideal: 720 }
-    }
-  };
-}
-
 function startScanner() {
   const qrCodeScanner = new Html5Qrcode("reader");
   qrCodeScanner.start(
-    getConfig().videoConstraints,
-    getConfig(),
+    { facingMode: "environment" },
+    {
+      fps: 10,
+      qrbox: { width: 600, height: 200 },
+      aspectRatio: 1.77 // 16:9
+    },
     (code) => {
       qrCodeScanner.stop().then(() => {
         handleScan(code, qrCodeScanner);
       });
     },
-    (error) => {}
-  );
+    (error) => {
+      console.warn("QR Error:", error);
+    }
+  ).catch((err) => {
+    console.error("Camera init failed:", err);
+    document.getElementById("feedback").innerText = "❌ 카메라 접근 실패";
+  });
 }
 
 function handleScan(code, qrCodeScanner) {
@@ -72,15 +71,7 @@ function handleScan(code, qrCodeScanner) {
 
       setTimeout(() => {
         feedback.innerHTML = "";
-        qrCodeScanner.start(
-          getConfig().videoConstraints,
-          getConfig(),
-          (newCode) => {
-            qrCodeScanner.stop().then(() => {
-              handleScan(newCode, qrCodeScanner);
-            });
-          }
-        );
+        startScanner();
       }, 1500);
     })
     .catch(() => {
@@ -89,15 +80,7 @@ function handleScan(code, qrCodeScanner) {
       feedback.style.color = "red";
       setTimeout(() => {
         feedback.innerHTML = "";
-        qrCodeScanner.start(
-          getConfig().videoConstraints,
-          getConfig(),
-          (newCode) => {
-            qrCodeScanner.stop().then(() => {
-              handleScan(newCode, qrCodeScanner);
-            });
-          }
-        );
+        startScanner();
       }, 1500);
     });
 }
