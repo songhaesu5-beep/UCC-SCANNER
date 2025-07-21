@@ -29,16 +29,17 @@ const SCAN_URL_BASE = "https://script.google.com/macros/s/AKfycby47A__5YeAq6n04c
 
 function startScanner() {
   const qrCodeScanner = new Html5Qrcode("reader");
-  qrCodeScanner.start(
-    { facingMode: "environment" },
-    { fps: 10, qrbox: 250 },
-    (code) => {
-      qrCodeScanner.stop().then(() => {
-        handleScan(code, qrCodeScanner);
-      });
-    },
-    (error) => {}
-  );
+ qrCodeScanner.start(
+  { facingMode: "environment" },
+  { fps: 10, qrbox: { width: 400, height: 200 } },
+  (code) => {
+    qrCodeScanner.stop().then(() => {
+      handleScan(code, qrCodeScanner);
+    });
+  },
+  (error) => {}
+);
+
 }
 
 function handleScan(code, qrCodeScanner) {
