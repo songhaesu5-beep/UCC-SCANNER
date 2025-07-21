@@ -7,9 +7,9 @@
   <style>
     #reader {
       width: 100%;
-      min-height: 300px;
-      margin: auto;
+      height: 400px;
       border: 2px dashed #999;
+      margin: auto;
     }
     #feedback {
       font-size: 5em;
@@ -27,30 +27,44 @@
 <script>
 const SCAN_URL_BASE = "https://script.google.com/macros/s/AKfycby47A__5YeAq6n04cBzJH_yaFdl4WB96Bqyp5Hg_YDk4shALnFdPlQOmvyk65X_My2kiA/exec?code=";
 
+let html5QrcodeScanner;
+
 function startScanner() {
-  const qrCodeScanner = new Html5Qrcode("reader");
-  qrCodeScanner.start(
-    {
-      facingMode: "environment",
-      width: { ideal: 1280 },
-      height: { ideal: 720 }
-    },
-    {
-      fps: 10,
-      qrbox: { width: 600, height: 200 }
-    },
-    (code) => {
-      qrCodeScanner.stop().then(() => {
-        handleScan(code, qrCodeScanner);
-      });
-    },
-    (error) => {}
-  );
+  html5QrcodeScanner = new Html5Qrcode("reader");
+
+  Html5Qrcode.getCameras().then(devices => {
+    if (devices && devices.length) {
+      html5QrcodeScanner.start(
+        { facingMode: "environment" },
+        {
+          fps: 10,
+          qrbox: { width: 600, height: 200 },
+        },
+        onScanSuccess,
+        onScanFailure
+      );
+    } else {
+      document.getElementById("feedback").innerText = "❌ 카메라 없음";
+    }
+  }).catch(err => {
+    console.error("카메라 접근 실패:", err);
+    document.getElementById("feedback").innerText = "❌ 카메라 접근 실패";
+  });
 }
 
-function handleScan(code, qrCodeScanner) {
+function onScanSuccess(code) {
+  html5QrcodeScanner.stop().then(() => {
+    handleScan(code);
+  });
+}
+
+function onScanFailure(error) {
+  // 무시 (콘솔에만 출력)
+}
+
+function handleScan(code) {
   fetch(SCAN_URL_BASE + encodeURIComponent(code))
-    .then(response => response.text())
+    .then(res => res.text())
     .then(result => {
       const feedback = document.getElementById("feedback");
       if (result.includes("✓")) {
@@ -66,46 +80,14 @@ function handleScan(code, qrCodeScanner) {
 
       setTimeout(() => {
         feedback.innerHTML = "";
-        qrCodeScanner.start(
-          {
-            facingMode: "environment",
-            width: { ideal: 1280 },
-            height: { ideal: 720 }
-          },
-          {
-            fps: 10,
-            qrbox: { width: 600, height: 200 }
-          },
-          (newCode) => {
-            qrCodeScanner.stop().then(() => {
-              handleScan(newCode, qrCodeScanner);
-            });
-          }
-        );
+        startScanner();
       }, 1500);
     })
     .catch(() => {
-      const feedback = document.getElementById("feedback");
-      feedback.innerHTML = "❌ ERROR";
-      feedback.style.color = "red";
+      document.getElementById("feedback").innerHTML = "❌ ERROR";
       setTimeout(() => {
-        feedback.innerHTML = "";
-        qrCodeScanner.start(
-          {
-            facingMode: "environment",
-            width: { ideal: 1280 },
-            height: { ideal: 720 }
-          },
-          {
-            fps: 10,
-            qrbox: { width: 600, height: 200 }
-          },
-          (newCode) => {
-            qrCodeScanner.stop().then(() => {
-              handleScan(newCode, qrCodeScanner);
-            });
-          }
-        );
+        document.getElementById("feedback").innerHTML = "";
+        startScanner();
       }, 1500);
     });
 }
