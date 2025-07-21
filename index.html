@@ -7,6 +7,7 @@
   <style>
     #reader {
       width: 100%;
+      height: auto;
       margin: auto;
       border: 2px dashed #999;
     }
@@ -15,11 +16,6 @@
       text-align: center;
       margin-top: 30px;
       font-weight: bold;
-    }
-    /* ✅ QR 박스 크기 강제 적용 */
-    #reader__scan_region > div {
-      width: 600px !important;
-      height: 200px !important;
     }
   </style>
 </head>
@@ -31,24 +27,30 @@
 <script>
 const SCAN_URL_BASE = "https://script.google.com/macros/s/AKfycby47A__5YeAq6n04cBzJH_yaFdl4WB96Bqyp5Hg_YDk4shALnFdPlQOmvyk65X_My2kiA/exec?code=";
 
-function startScanner() {
-  const qrCodeScanner = new Html5Qrcode("reader");
-  qrCodeScanner.start(
-    {
+function getConfig() {
+  return {
+    fps: 10,
+    qrbox: { width: 600, height: 200 },
+    aspectRatio: 16 / 9,
+    videoConstraints: {
       facingMode: "environment",
       width: { ideal: 1280 },
       height: { ideal: 720 }
-    },
-    {
-      fps: 10,
-      qrbox: { width: 600, height: 200 } // 이 설정은 일부 기기에서 무시될 수 있음
-    },
+    }
+  };
+}
+
+function startScanner() {
+  const qrCodeScanner = new Html5Qrcode("reader");
+  qrCodeScanner.start(
+    getConfig().videoConstraints,
+    getConfig(),
     (code) => {
       qrCodeScanner.stop().then(() => {
         handleScan(code, qrCodeScanner);
       });
     },
-    (error) => { }
+    (error) => {}
   );
 }
 
@@ -71,15 +73,8 @@ function handleScan(code, qrCodeScanner) {
       setTimeout(() => {
         feedback.innerHTML = "";
         qrCodeScanner.start(
-          {
-            facingMode: "environment",
-            width: { ideal: 1280 },
-            height: { ideal: 720 }
-          },
-          {
-            fps: 10,
-            qrbox: { width: 600, height: 200 }
-          },
+          getConfig().videoConstraints,
+          getConfig(),
           (newCode) => {
             qrCodeScanner.stop().then(() => {
               handleScan(newCode, qrCodeScanner);
@@ -95,15 +90,8 @@ function handleScan(code, qrCodeScanner) {
       setTimeout(() => {
         feedback.innerHTML = "";
         qrCodeScanner.start(
-          {
-            facingMode: "environment",
-            width: { ideal: 1280 },
-            height: { ideal: 720 }
-          },
-          {
-            fps: 10,
-            qrbox: { width: 600, height: 200 }
-          },
+          getConfig().videoConstraints,
+          getConfig(),
           (newCode) => {
             qrCodeScanner.stop().then(() => {
               handleScan(newCode, qrCodeScanner);
