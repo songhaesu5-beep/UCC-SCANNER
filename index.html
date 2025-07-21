@@ -1,50 +1,94 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <title>UCC 코드 스캔 결과</title>
+  <meta charset="UTF-8">
+  <title>UCC Scanner</title>
+  <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
-    body {
-      font-family: sans-serif;
-      text-align: center;
-      padding-top: 100px;
+    #reader {
+      width: 100%;
+      margin: auto;
     }
-    #result {
-      font-size: 64px;
+    #feedback {
+      font-size: 5em;
+      text-align: center;
+      margin-top: 30px;
       font-weight: bold;
     }
   </style>
 </head>
 <body>
-  <h1>UCC 코드 스캔 결과</h1>
-  <div id="result">결과 대기 중...</div>
 
-  <script>
-    const params = new URLSearchParams(window.location.search);
-    const code = params.get("code");
+<div id="reader"></div>
+<div id="feedback"></div>
 
-    if (!code) {
-      document.getElementById("result").textContent = "코드 없음";
-    } else {
-      fetch("https://script.google.com/macros/s/AKfycby47A__5YeAq6n04cBzJH_yaFdl4WB96Bqyp5Hg_YDk4shALnFdPlQOmvyk65X_My2kiA/exec?code=" + encodeURIComponent(code))
-        .then(res => res.text())
-        .then(text => {
-          const result = document.getElementById("result");
-          if (text === "✓") {
-            result.textContent = "✓";
-            result.style.color = "green";
-          } else if (text === "DUP") {
-            result.textContent = "DUP";
-            result.style.color = "orange";
-          } else {
-            result.textContent = "❌";
-            result.style.color = "red";
+<script>
+const SCAN_URL_BASE = "https://script.google.com/macros/s/여기에_당신의_GAS_URL_붙여넣기/exec?code=";
+
+function startScanner() {
+  const qrCodeScanner = new Html5Qrcode("reader");
+  qrCodeScanner.start(
+    { facingMode: "environment" },
+    { fps: 10, qrbox: 250 },
+    (code) => {
+      qrCodeScanner.stop().then(() => {
+        handleScan(code, qrCodeScanner);
+      });
+    },
+    (error) => {}
+  );
+}
+
+function handleScan(code, qrCodeScanner) {
+  fetch(SCAN_URL_BASE + encodeURIComponent(code))
+    .then(response => response.text())
+    .then(result => {
+      const feedback = document.getElementById("feedback");
+      if (result.includes("✓")) {
+        feedback.innerHTML = "✅";
+        feedback.style.color = "green";
+      } else if (result.includes("DUP")) {
+        feedback.innerHTML = "🔁 DUP";
+        feedback.style.color = "orange";
+      } else {
+        feedback.innerHTML = "❌";
+        feedback.style.color = "red";
+      }
+
+      setTimeout(() => {
+        feedback.innerHTML = "";
+        qrCodeScanner.start(
+          { facingMode: "environment" },
+          { fps: 10, qrbox: 250 },
+          (newCode) => {
+            qrCodeScanner.stop().then(() => {
+              handleScan(newCode, qrCodeScanner);
+            });
           }
-        })
-        .catch(() => {
-          document.getElementById("result").textContent = "에러 발생";
-        });
-    }
-  </script>
+        );
+      }, 1500);
+    })
+    .catch(() => {
+      const feedback = document.getElementById("feedback");
+      feedback.innerHTML = "❌ ERROR";
+      feedback.style.color = "red";
+      setTimeout(() => {
+        feedback.innerHTML = "";
+        qrCodeScanner.start(
+          { facingMode: "environment" },
+          { fps: 10, qrbox: 250 },
+          (newCode) => {
+            qrCodeScanner.stop().then(() => {
+              handleScan(newCode, qrCodeScanner);
+            });
+          }
+        );
+      }, 1500);
+    });
+}
+
+startScanner();
+</script>
+
 </body>
 </html>
