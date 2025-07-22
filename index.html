@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>UCC Scanner</title>
+  <script src="https://unpkg.com/html5-qrcode@2.3.9/html5-qrcode.min.js"></script>
+  <style>
+    #reader {
+      width: 100%;
+      min-height: 300px;
+      margin: auto;
+      border: 2px dashed #999;
+    }
+    #feedback {
+      font-size: 5em;
+      text-align: center;
+      margin-top: 30px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+<div id="reader"></div>
+<div id="feedback"></div>
+
+<script>
+const SCAN_URL_BASE = "https://script.google.com/macros/s/AKfycby47A__5YeAq6n04cBzJH_yaFdl4WB96Bqyp5Hg_YDk4shALnFdPlQOmvyk65X_My2kiA/exec?code=";
+
+function startScanner() {
+  const qrCodeScanner = new Html5Qrcode("reader");
+  qrCodeScanner.start(
+    { facingMode: "environment" },
+    { fps: 10, qrbox: 250 },
+    (code) => {
+      qrCodeScanner.stop().then(() => {
+        handleScan(code, qrCodeScanner);
+      });
+    },
+    (error) => {}
+  );
+}
+
+function handleScan(code, qrCodeScanner) {
+  fetch(SCAN_URL_BASE + encodeURIComponent(code))
+    .then(response => response.text())
+    .then(result => {
+      const feedback = document.getElementById("feedback");
+      if (result.includes("✓")) {
+        feedback.innerHTML = "✅";
+        feedback.style.color = "green";
+      } else if (result.includes("DUP")) {
+        feedback.innerHTML = "🔁 DUP";
+        feedback.style.color = "orange";
+      } else {
+        feedback.innerHTML = "❌";
+        feedback.style.color = "red";
+      }
+
+      setTimeout(() => {
+        feedback.innerHTML = "";
+        qrCodeScanner.start(
+          { facingMode: "environment" },
+          { fps: 10, qrbox: 250 },
+          (newCode) => {
+            qrCodeScanner.stop().then(() => {
+              handleScan(newCode, qrCodeScanner);
+            });
+          }
+        );
+      }, 1500);
+    })
+    .catch(() => {
+      const feedback = document.getElementById("feedback");
+      feedback.innerHTML = "❌ ERROR";
+      feedback.style.color = "red";
+      setTimeout(() => {
+        feedback.innerHTML = "";
+        qrCodeScanner.start(
+          { facingMode: "environment" },
+          { fps: 10, qrbox: 250 },
+          (newCode) => {
+            qrCodeScanner.stop().then(() => {
+              handleScan(newCode, qrCodeScanner);
+            });
+          }
+        );
+      }, 1500);
+    });
+}
+
+startScanner();
+</script>
+
+</body>
+</html>
