@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>UCC SCANNER</title>
-  <!-- ✅ 올바른 html5-qrcode CDN 경로 -->
-  <script src="https://unpkg.com/html5-qrcode@2.3.9/minified/html5-qrcode.min.js"></script>
+  <script src="./html5-qrcode.min.js"></script> <!-- ✅ 로컬 JS -->
   <style>
     #reader {
       width: 100%;
@@ -43,8 +42,9 @@
           });
         }
       ).catch(err => {
-        document.getElementById("feedback").innerHTML = "❌ 카메라 접근 실패<br>" + err;
-        document.getElementById("feedback").style.color = "red";
+        const fb = document.getElementById("feedback");
+        fb.innerHTML = "❌ 카메라 접근 실패<br>" + err;
+        fb.style.color = "red";
       });
     }
 
