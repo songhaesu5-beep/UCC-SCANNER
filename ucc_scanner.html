@@ -1,10 +1,10 @@
-
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
   <title>UCC SCANNER</title>
-  <script src="https://unpkg.com/html5-qrcode@2.3.9/minified/html5-qrcode.min.js"></script>
+  <!-- ✅ 정확한 라이브러리 경로 -->
+  <script src="https://unpkg.com/html5-qrcode@2.3.9/html5-qrcode.min.js"></script>
   <style>
     #reader {
       width: 100%;
@@ -74,6 +74,7 @@
         });
     }
 
+    // ✅ DOM 완전히 로드 후 실행
     window.addEventListener("DOMContentLoaded", () => {
       startScanner();
     });
