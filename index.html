@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <title>UCC Scanner</title>
-  <script src="https://unpkg.com/html5-qrcode@2.3.9/html5-qrcode.min.js"></script>
+  <!-- ✅ 라이브러리 최신 버전으로 수정 -->
+  <script src="https://unpkg.com/html5-qrcode@2.3.10/minified/html5-qrcode.min.js"></script>
   <style>
     #reader {
       width: 100%;
@@ -30,19 +31,10 @@ const SCAN_URL_BASE = "https://script.google.com/macros/s/AKfycby47A__5YeAq6n04c
 function startScanner() {
   const qrCodeScanner = new Html5Qrcode("reader");
   qrCodeScanner.start(
-    {
-      facingMode: "environment",
-      width: { ideal: 1280 },
-      height: { ideal: 720 }
-    },
-    {
-      fps: 10,
-      qrbox: { width: 600, height: 200 }
-    },
+    { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } },
+    { fps: 10, qrbox: { width: 600, height: 200 } },
     (code) => {
-      qrCodeScanner.stop().then(() => {
-        handleScan(code, qrCodeScanner);
-      });
+      qrCodeScanner.stop().then(() => handleScan(code, qrCodeScanner));
     },
     (error) => {}
   );
@@ -67,19 +59,10 @@ function handleScan(code, qrCodeScanner) {
       setTimeout(() => {
         feedback.innerHTML = "";
         qrCodeScanner.start(
-          {
-            facingMode: "environment",
-            width: { ideal: 1280 },
-            height: { ideal: 720 }
-          },
-          {
-            fps: 10,
-            qrbox: { width: 600, height: 200 }
-          },
+          { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } },
+          { fps: 10, qrbox: { width: 600, height: 200 } },
           (newCode) => {
-            qrCodeScanner.stop().then(() => {
-              handleScan(newCode, qrCodeScanner);
-            });
+            qrCodeScanner.stop().then(() => handleScan(newCode, qrCodeScanner));
           }
         );
       }, 1500);
@@ -91,26 +74,20 @@ function handleScan(code, qrCodeScanner) {
       setTimeout(() => {
         feedback.innerHTML = "";
         qrCodeScanner.start(
-          {
-            facingMode: "environment",
-            width: { ideal: 1280 },
-            height: { ideal: 720 }
-          },
-          {
-            fps: 10,
-            qrbox: { width: 600, height: 200 }
-          },
+          { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } },
+          { fps: 10, qrbox: { width: 600, height: 200 } },
           (newCode) => {
-            qrCodeScanner.stop().then(() => {
-              handleScan(newCode, qrCodeScanner);
-            });
+            qrCodeScanner.stop().then(() => handleScan(newCode, qrCodeScanner));
           }
         );
       }, 1500);
     });
 }
 
-startScanner();
+// ✅ DOM이 다 로드된 후 실행되도록
+window.addEventListener("DOMContentLoaded", () => {
+  startScanner();
+});
 </script>
 
 </body>
