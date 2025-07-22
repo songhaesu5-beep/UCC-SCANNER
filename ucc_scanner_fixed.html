@@ -1,0 +1,130 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>UCC Scanner</title>
+  <style>
+    #reader {
+      width: 100%;
+      min-height: 300px;
+      margin: auto;
+      border: 2px dashed #999;
+    }
+    #feedback {
+      font-size: 5em;
+      text-align: center;
+      margin-top: 30px;
+      font-weight: bold;
+    }
+  </style>
+  <script>
+    function loadScript(url, callback) {
+      const script = document.createElement('script');
+      script.src = url;
+      script.onload = callback;
+      script.onerror = function () {
+        alert("라이브러리를 로드하지 못했습니다.");
+      };
+      document.head.appendChild(script);
+    }
+  </script>
+</head>
+<body>
+
+<div id="reader"></div>
+<div id="feedback"></div>
+
+<script>
+  const SCAN_URL_BASE = "https://script.google.com/macros/s/AKfycby47A__5YeAq6n04cBzJH_yaFdl4WB96Bqyp5Hg_YDk4shALnFdPlQOmvyk65X_My2kiA/exec?code=";
+
+  function startScanner() {
+    const qrCodeScanner = new Html5Qrcode("reader");
+    qrCodeScanner.start(
+      {
+        facingMode: "environment",
+        width: { ideal: 1280 },
+        height: { ideal: 720 }
+      },
+      {
+        fps: 10,
+        qrbox: { width: 600, height: 200 }
+      },
+      (code) => {
+        qrCodeScanner.stop().then(() => {
+          handleScan(code, qrCodeScanner);
+        });
+      },
+      (error) => {}
+    );
+  }
+
+  function handleScan(code, qrCodeScanner) {
+    fetch(SCAN_URL_BASE + encodeURIComponent(code))
+      .then(response => response.text())
+      .then(result => {
+        const feedback = document.getElementById("feedback");
+        if (result.includes("✓")) {
+          feedback.innerHTML = "✅";
+          feedback.style.color = "green";
+        } else if (result.includes("DUP")) {
+          feedback.innerHTML = "🔁 DUP";
+          feedback.style.color = "orange";
+        } else {
+          feedback.innerHTML = "❌";
+          feedback.style.color = "red";
+        }
+
+        setTimeout(() => {
+          feedback.innerHTML = "";
+          qrCodeScanner.start(
+            {
+              facingMode: "environment",
+              width: { ideal: 1280 },
+              height: { ideal: 720 }
+            },
+            {
+              fps: 10,
+              qrbox: { width: 600, height: 200 }
+            },
+            (newCode) => {
+              qrCodeScanner.stop().then(() => {
+                handleScan(newCode, qrCodeScanner);
+              });
+            }
+          );
+        }, 1500);
+      })
+      .catch(() => {
+        const feedback = document.getElementById("feedback");
+        feedback.innerHTML = "❌ ERROR";
+        feedback.style.color = "red";
+        setTimeout(() => {
+          feedback.innerHTML = "";
+          qrCodeScanner.start(
+            {
+              facingMode: "environment",
+              width: { ideal: 1280 },
+              height: { ideal: 720 }
+            },
+            {
+              fps: 10,
+              qrbox: { width: 600, height: 200 }
+            },
+            (newCode) => {
+              qrCodeScanner.stop().then(() => {
+                handleScan(newCode, qrCodeScanner);
+              });
+            }
+          );
+        }, 1500);
+      });
+  }
+
+  window.addEventListener("DOMContentLoaded", () => {
+    loadScript("https://unpkg.com/html5-qrcode@2.3.9/html5-qrcode.min.js", startScanner);
+  });
+</script>
+
+</body>
+</html>
