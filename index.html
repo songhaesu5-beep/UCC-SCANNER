@@ -1,88 +1,74 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-  <meta charset="UTF-8">
-  <title>UCC SCANNER</title>
-  <script src="https://unpkg.com/html5-qrcode"></script>
-  <style>
-    #reader {
-      width: 100%;
-      max-width: 600px;
-      margin: auto;
-      border: 2px dashed #888;
-      min-height: 300px;
-    }
-    #feedback {
-      font-size: 3em;
-      text-align: center;
-      margin-top: 20px;
-    }
-    h2 {
-      text-align: center;
-    }
-  </style>
-  <link rel="icon" href="data:,">
-</head>
-<body>
-  <h2>UCC-SCANNER</h2>
-  <div id="reader"></div>
-  <div id="feedback"></div>
+function handleScan(code, editedRow = null) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const logSheet = ss.getSheetByName("Scan_Log");
+  const regSheet = ss.getSheetByName("Registered");
 
-  <script>
-    const SCAN_URL_BASE = "https://script.google.com/macros/s/AKfycby47A__5YeAq6n04cBzJH_yaFdl4WB96Bqyp5Hg_YDk4shALnFdPlQOmvyk65X_My2kiA/exec?code=";
+  const trimmed = code.replace(/\s+/g, "");
+  const now = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss");
 
-    function startScanner() {
-      const qrScanner = new Html5Qrcode("reader");
-      qrScanner.start(
-        { facingMode: "environment" },
-        { fps: 10, qrbox: { width: 300, height: 150 } },
-        code => {
-          qrScanner.stop().then(() => {
-            handleScan(code, qrScanner);
-          });
-        }
-      ).catch(err => {
-        const fb = document.getElementById("feedback");
-        fb.innerHTML = "❌ 카메라 접근 실패<br>" + err;
-        fb.style.color = "red";
-      });
+  const logData = logSheet.getRange("B2:B" + logSheet.getLastRow()).getValues().flat()
+    .map(x => x.toString().replace(/\s+/g, ""));
+
+  const regData = regSheet.getRange("A2:A" + regSheet.getLastRow()).getValues().flat()
+    .map(x => x.toString().replace(/\s+/g, ""));
+
+  // 1. Scan_Log 위치 기준으로 처리
+  const row = editedRow || logSheet.getLastRow();
+  const statusCell = logSheet.getRange(row, 3);
+  const timeCell = logSheet.getRange(row, 4);
+  timeCell.setValue(now);
+
+  // ✅ 등록되지 않은 코드
+  if (!regData.includes(trimmed)) {
+    statusCell.setValue("❌").setFontColor("red").setFontSize(30).setFontWeight("bold");
+    return;
+  }
+
+  // ✅ 중복 여부 판단 (전체 로그 기준으로 확인)
+  if (logData.includes(trimmed)) {
+    statusCell.setValue("DUP").setFontColor("orange").setFontSize(30).setFontWeight("bold");
+  } else {
+    statusCell.setValue("✓").setFontColor("green").setFontSize(30).setFontWeight("bold");
+  }
+
+  // 2. Registered 시트 갱신
+  for (let i = 0; i < regData.length; i++) {
+    if (regData[i] === trimmed) {
+      const r = i + 2;
+      const alreadyScanned = regSheet.getRange(r, 2).getValue();
+      if (!alreadyScanned) {
+        regSheet.getRange(r, 2).setValue(code);
+        regSheet.getRange(r, 3).setValue("✓").setFontColor("green").setFontSize(30).setFontWeight("bold");
+        regSheet.getRange(r, 4).setValue(now);
+      }
+      break;
     }
+  }
+}
 
-    function handleScan(code, qrScanner) {
-      const feedback = document.getElementById("feedback");
-      fetch(SCAN_URL_BASE + encodeURIComponent(code))
-        .then(res => res.text())
-        .then(result => {
-          if (result.includes("✓")) {
-            feedback.innerHTML = "✅";
-            feedback.style.color = "green";
-          } else if (result.includes("DUP")) {
-            feedback.innerHTML = "🔁 DUP";
-            feedback.style.color = "orange";
-          } else {
-            feedback.innerHTML = "❌";
-            feedback.style.color = "red";
-          }
-          setTimeout(() => {
-            feedback.innerHTML = "";
-            qrScanner.start(
-              { facingMode: "environment" },
-              { fps: 10, qrbox: { width: 300, height: 150 } },
-              newCode => {
-                qrScanner.stop().then(() => handleScan(newCode, qrScanner));
-              }
-            );
-          }, 1500);
-        })
-        .catch(() => {
-          feedback.innerHTML = "❌ 서버 오류";
-          feedback.style.color = "red";
-        });
-    }
+// ✅ 수동 입력 감지 (Scan_Log B열에서)
+function onEdit(e) {
+  const sheet = e.range.getSheet();
+  if (sheet.getName() === "Scan_Log" && e.range.getColumn() === 2 && e.range.getRow() >= 2 && e.value) {
+    handleScan(e.value, e.range.getRow());
+  }
+}
 
-    window.addEventListener("DOMContentLoaded", () => {
-      startScanner();
-    });
-  </script>
-</body>
-</html>
+// ✅ 초기 실행용 권한 승인 함수
+function initAuthorization() {
+  const s = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Scan_Log");
+  if (!s) SpreadsheetApp.getUi().alert("‘Scan_Log’ 시트를 찾을 수 없습니다.");
+  else s.getRange("A1").setValue("권한 승인 완료");
+}
+
+// ✅ 웹앱 접근 (스캔 결과를 반환)
+function doGet(e) {
+  const code = e.parameter.code;
+  if (!code) return ContentService.createTextOutput("No code provided");
+
+  handleScan(code);  // 기존 함수 호출
+
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Scan_Log");
+  const lastStatus = sheet.getRange(sheet.getLastRow(), 3).getValue();
+  return ContentService.createTextOutput(lastStatus.toString());
+}
