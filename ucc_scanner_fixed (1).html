@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>UCC SCANNER</title>
+  <script src="https://unpkg.com/html5-qrcode@2.3.9/html5-qrcode.min.js"></script>
+  <style>
+    #reader {
+      width: 100%;
+      max-width: 600px;
+      margin: auto;
+      border: 2px dashed #888;
+      min-height: 300px;
+    }
+    #feedback {
+      font-size: 4em;
+      text-align: center;
+      margin-top: 20px;
+    }
+  </style>
+  <link rel="icon" href="data:,">
+</head>
+<body>
+  <h2 style="text-align:center;">UCC-SCANNER</h2>
+  <div id="reader"></div>
+  <div id="feedback"></div>
+
+  <script>
+    const SCAN_URL_BASE = "https://script.google.com/macros/s/AKfycby47A__5YeAq6n04cBzJH_yaFdl4WB96Bqyp5Hg_YDk4shALnFdPlQOmvyk65X_My2kiA/exec?code=";
+
+    function startScanner() {
+      const qrScanner = new Html5Qrcode("reader");
+      qrScanner.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 300, height: 150 } },
+        code => {
+          qrScanner.stop().then(() => {
+            handleScan(code, qrScanner);
+          });
+        }
+      ).catch(err => {
+        document.getElementById("feedback").innerHTML = "❌ 카메라 오류<br>" + err;
+      });
+    }
+
+    function handleScan(code, qrScanner) {
+      const feedback = document.getElementById("feedback");
+      fetch(SCAN_URL_BASE + encodeURIComponent(code))
+        .then(res => res.text())
+        .then(result => {
+          if (result.includes("✓")) {
+            feedback.innerHTML = "✅";
+            feedback.style.color = "green";
+          } else if (result.includes("DUP")) {
+            feedback.innerHTML = "🔁 DUP";
+            feedback.style.color = "orange";
+          } else {
+            feedback.innerHTML = "❌";
+            feedback.style.color = "red";
+          }
+          setTimeout(() => {
+            feedback.innerHTML = "";
+            qrScanner.start(
+              { facingMode: "environment" },
+              { fps: 10, qrbox: { width: 300, height: 150 } },
+              newCode => {
+                qrScanner.stop().then(() => handleScan(newCode, qrScanner));
+              }
+            );
+          }, 1500);
+        })
+        .catch(() => {
+          feedback.innerHTML = "❌ ERROR";
+          feedback.style.color = "red";
+        });
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      startScanner();
+    });
+  </script>
+</body>
+</html>
