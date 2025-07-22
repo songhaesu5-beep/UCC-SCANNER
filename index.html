@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>UCC Scanner</title>
+  <script src="https://unpkg.com/html5-qrcode@2.3.9/html5-qrcode.min.js"></script>
   <style>
     #reader {
       width: 100%;
@@ -22,9 +23,6 @@
 
 <div id="reader"></div>
 <div id="feedback"></div>
-
-<!-- ✅ 라이브러리 항상 body 맨 아래에서 로드 -->
-<script src="https://unpkg.com/html5-qrcode@2.3.9/html5-qrcode.min.js"></script>
 
 <script>
 const SCAN_URL_BASE = "https://script.google.com/macros/s/AKfycby47A__5YeAq6n04cBzJH_yaFdl4WB96Bqyp5Hg_YDk4shALnFdPlQOmvyk65X_My2kiA/exec?code=";
@@ -46,7 +44,7 @@ function startScanner() {
         handleScan(code, qrCodeScanner);
       });
     },
-    (error) => { /* 무시 */ }
+    (error) => {}
   );
 }
 
@@ -112,10 +110,7 @@ function handleScan(code, qrCodeScanner) {
     });
 }
 
-// ✅ 보장된 실행 타이밍
-window.onload = () => {
-  startScanner();
-};
+startScanner();
 </script>
 
 </body>
