@@ -21,13 +21,14 @@
 
     #feedback {
       position: absolute;
-      top: 40%;
+      top: 35%;
       left: 50%;
       transform: translate(-50%, -50%);
-      font-size: 5em;
+      font-size: 3em;
       font-weight: bold;
       color: white;
       z-index: 1000;
+      text-align: center;
       text-shadow: 2px 2px 8px black;
     }
   </style>
@@ -37,13 +38,13 @@
   <div id="feedback"></div>
 
   <script>
-    const SCAN_URL_BASE = "https://script.google.com/macros/s/AKfycbwZlgJ72ZviXPshy6eyB1b9tW0w6Z5sC6RDxhsXM0mW7wBC8BksuKsDpla9Fs26jl6y1Q/exec?code=";
+    const SCAN_URL_BASE = "https://script.google.com/macros/s/AKfycbz5QNsNnCej5E1x-OlcxW83J8YcF5gDTMC9F4tp4sFrmju9RaGio8bM4tE0mPu8SbPdmA/exec?code=";
 
     function startScanner() {
       const qrScanner = new Html5Qrcode("reader");
 
-      const boxWidth = Math.floor(window.innerWidth * 0.9);  // 가로의 90%
-      const boxHeight = Math.floor(boxWidth * 0.3);          // 가로의 절반
+      const boxWidth = 360;   // 직접 숫자 지정
+      const boxHeight = 100;  // 세로 크기 수동 설정
 
       qrScanner.start(
         { facingMode: "environment" },
@@ -58,34 +59,41 @@
         }
       ).catch(err => {
         const fb = document.getElementById("feedback");
-        fb.innerHTML = "❌ 카메라 접근 실패<br>" + err;
+        fb.innerHTML = "❌<br>카메라 접근 실패<br>" + err;
         fb.style.color = "red";
       });
     }
 
     function handleScan(code) {
       const feedback = document.getElementById("feedback");
+
       fetch(SCAN_URL_BASE + encodeURIComponent(code))
         .then(res => res.text())
         .then(result => {
-          if (result.includes("✓")) {
-            feedback.innerHTML = "✅";
+          let parts = result.split(":");
+          let status = parts[0];
+          let row = parts[1] || "";
+          let sscc = parts[2] || "";
+          let carton = parts[3] || "";
+
+          if (status === "✓") {
+            feedback.innerHTML = `✅<br>${sscc}<br>Carton: ${carton}`;
             feedback.style.color = "lime";
-          } else if (result.includes("DUP")) {
-            feedback.innerHTML = "🔁 DUP";
+          } else if (status === "DUP") {
+            feedback.innerHTML = `🔁 DUP<br>${sscc}<br>Carton: ${carton}`;
             feedback.style.color = "orange";
           } else {
-            feedback.innerHTML = "❌";
+            feedback.innerHTML = "❌<br>등록되지 않음";
             feedback.style.color = "red";
           }
 
           setTimeout(() => {
             feedback.innerHTML = "";
-            startScanner(); // 다시 시작
+            startScanner(); // 재시작
           }, 1500);
         })
         .catch(() => {
-          feedback.innerHTML = "❌ 서버 오류";
+          feedback.innerHTML = "❌<br>서버 오류";
           feedback.style.color = "red";
         });
     }
@@ -95,4 +103,4 @@
     });
   </script>
 </body>
-</html
+</html>
