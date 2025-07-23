@@ -24,7 +24,7 @@
       top: 40%;
       left: 50%;
       transform: translate(-50%, -50%);
-      font-size: 10em; /* ✅ 더 크게 */
+      font-size: 10em;
       font-weight: bold;
       color: white;
       z-index: 1000;
@@ -43,15 +43,15 @@
     function startScanner() {
       const qrScanner = new Html5Qrcode("reader");
 
+      // ✅ 고정 값으로 설정 (안정적)
+      const boxWidth = 320;  // 원하는 가로 픽셀 값 (예: 90% 기준이면 대략 320~350px)
+      const boxHeight = 100; // 원하는 세로 값 (줄임)
+
       qrScanner.start(
         { facingMode: "environment" },
         {
           fps: 10,
-          qrbox: (viewport) => {
-            const width = Math.floor(viewport.width * 0.9);
-            const height = Math.floor(width * 0.2);  // ✅ 세로 길이: 가로의 20%
-            return { width, height };
-          }
+          qrbox: { width: boxWidth, height: boxHeight }  // ✅ 직사각형 박스
         },
         code => {
           qrScanner.stop().then(() => {
