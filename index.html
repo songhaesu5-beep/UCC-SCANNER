@@ -21,7 +21,7 @@
 
     #feedback {
       position: absolute;
-      top: 40%;
+      top: 30%;
       left: 50%;
       transform: translate(-50%, -50%);
       font-size: 4.5em;
@@ -31,20 +31,43 @@
       text-align: center;
       text-shadow: 2px 2px 8px black;
     }
+
+    #nextButton {
+      position: absolute;
+      bottom: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 20px 40px;
+      font-size: 2em;
+      background-color: #333;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      z-index: 1001;
+      display: none;
+    }
+
+    #nextButton:hover {
+      background-color: #555;
+    }
   </style>
 </head>
 <body>
   <div id="reader"></div>
   <div id="feedback"></div>
+  <button id="nextButton" onclick="restartScanner()">다음 스캔</button>
 
   <script>
     const SCAN_URL_BASE = "https://script.google.com/macros/s/AKfycbz5QNsNnCej5E1x-OlcxW83J8YcF5gDTMC9F4tp4sFrmju9RaGio8bM4tE0mPu8SbPdmA/exec?code=";
 
-    function startScanner() {
-      const qrScanner = new Html5Qrcode("reader");
+    let qrScanner;
 
-      const boxWidth = Math.floor(window.innerWidth * 0.9);  // 원래대로
-      const boxHeight = Math.floor(boxWidth * 0.3);          // 원래대로
+    function startScanner() {
+      qrScanner = new Html5Qrcode("reader");
+
+      const boxWidth = Math.floor(window.innerWidth * 0.9);
+      const boxHeight = Math.floor(boxWidth * 0.3);
 
       qrScanner.start(
         { facingMode: "environment" },
@@ -66,6 +89,7 @@
 
     function handleScan(code) {
       const feedback = document.getElementById("feedback");
+      const nextButton = document.getElementById("nextButton");
 
       fetch(SCAN_URL_BASE + encodeURIComponent(code))
         .then(res => res.text())
@@ -86,15 +110,21 @@
             feedback.style.color = "red";
           }
 
-          setTimeout(() => {
-            feedback.innerHTML = "";
-            startScanner(); // 다시 시작
-          }, 1500);
+          nextButton.style.display = "block";
         })
         .catch(() => {
           feedback.innerHTML = "❌<br>서버 오류";
           feedback.style.color = "red";
+          nextButton.style.display = "block";
         });
+    }
+
+    function restartScanner() {
+      const feedback = document.getElementById("feedback");
+      const nextButton = document.getElementById("nextButton");
+      feedback.innerHTML = "";
+      nextButton.style.display = "none";
+      startScanner();
     }
 
     window.addEventListener("DOMContentLoaded", () => {
