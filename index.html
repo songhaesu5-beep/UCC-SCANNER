@@ -24,7 +24,7 @@
       top: 40%;
       left: 50%;
       transform: translate(-50%, -50%);
-      font-size: 10em; /* ✅ 피드백 크기 크게 조정 */
+      font-size: 20em; /* ✅ 피드백 크기 크게 조정 */
       font-weight: bold;
       color: white;
       z-index: 1000;
@@ -43,7 +43,7 @@
       const qrScanner = new Html5Qrcode("reader");
 
       const boxWidth = Math.floor(window.innerWidth * 0.9);  // 가로의 90%
-      const boxHeight = Math.floor(boxWidth * 0.1);          // 가로의 30%
+      const boxHeight = Math.floor(boxWidth * 0.3);          // 가로의 30%
 
       qrScanner.start(
         { facingMode: "environment" },
