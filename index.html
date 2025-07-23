@@ -42,21 +42,18 @@
     function startScanner() {
       const qrScanner = new Html5Qrcode("reader");
 
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
-
-      const qrboxWidth = Math.floor(vw * 0.9);     // 90% of viewport width
-      const qrboxHeight = Math.floor(vh * 0.13);   // 13% of viewport height
+      const boxWidth = Math.floor(window.innerWidth * 0.9);  // 가로의 90%
+      const boxHeight = Math.floor(boxWidth * 0.5);          // 가로의 절반
 
       qrScanner.start(
         { facingMode: "environment" },
         {
           fps: 10,
-          qrbox: { width: qrboxWidth, height: qrboxHeight }
+          qrbox: { width: boxWidth, height: boxHeight }
         },
         code => {
           qrScanner.stop().then(() => {
-            handleScan(code, qrScanner);
+            handleScan(code);
           });
         }
       ).catch(err => {
@@ -66,7 +63,7 @@
       });
     }
 
-    function handleScan(code, qrScanner) {
+    function handleScan(code) {
       const feedback = document.getElementById("feedback");
       fetch(SCAN_URL_BASE + encodeURIComponent(code))
         .then(res => res.text())
@@ -84,7 +81,7 @@
 
           setTimeout(() => {
             feedback.innerHTML = "";
-            startScanner(); // 재시작
+            startScanner(); // 다시 시작
           }, 1500);
         })
         .catch(() => {
