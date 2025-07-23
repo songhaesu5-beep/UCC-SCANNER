@@ -21,10 +21,10 @@
 
     #feedback {
       position: absolute;
-      top: 35%;
+      top: 40%;
       left: 50%;
       transform: translate(-50%, -50%);
-      font-size: 3em;
+      font-size: 4.5em;
       font-weight: bold;
       color: white;
       z-index: 1000;
@@ -43,8 +43,8 @@
     function startScanner() {
       const qrScanner = new Html5Qrcode("reader");
 
-      const boxWidth = 360;   // 직접 숫자 지정
-      const boxHeight = 100;  // 세로 크기 수동 설정
+      const boxWidth = Math.floor(window.innerWidth * 0.9);  // 원래대로
+      const boxHeight = Math.floor(boxWidth * 0.3);          // 원래대로
 
       qrScanner.start(
         { facingMode: "environment" },
@@ -70,11 +70,10 @@
       fetch(SCAN_URL_BASE + encodeURIComponent(code))
         .then(res => res.text())
         .then(result => {
-          let parts = result.split(":");
-          let status = parts[0];
-          let row = parts[1] || "";
-          let sscc = parts[2] || "";
-          let carton = parts[3] || "";
+          const parts = result.split(":");
+          const status = parts[0];
+          const sscc = parts[2] || "";
+          const carton = parts[3] || "";
 
           if (status === "✓") {
             feedback.innerHTML = `✅<br>${sscc}<br>Carton: ${carton}`;
@@ -89,7 +88,7 @@
 
           setTimeout(() => {
             feedback.innerHTML = "";
-            startScanner(); // 재시작
+            startScanner(); // 다시 시작
           }, 1500);
         })
         .catch(() => {
