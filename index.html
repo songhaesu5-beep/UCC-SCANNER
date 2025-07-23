@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>UCC SCANNER</title>
@@ -59,7 +59,7 @@
   <button id="nextButton" onclick="restartScanner()">NEXT</button>
 
   <script>
-    const SCAN_URL_BASE = "https://script.google.com/macros/s/AKfycbz5QNsNnCej5E1x-OlcxW83J8YcF5gDTMC9F4tp4sFrmju9RaGio8bM4tE0mPu8SbPdmA/exec?code=";
+    const SCAN_URL_BASE = "https://script.google.com/macros/s/AKfycbxAPI3xgaD7q-1okrdglubNIYb2G6uMmRJfF8HvcusJvOMv-3339LpzWLF0KvzG34rMDg/exec?code=";
 
     let qrScanner;
 
@@ -82,7 +82,7 @@
         }
       ).catch(err => {
         const fb = document.getElementById("feedback");
-        fb.innerHTML = "❌<br>카메라 접근 실패<br>" + err;
+        fb.innerHTML = "❌<br>Camera Access Error<br>" + err;
         fb.style.color = "red";
       });
     }
