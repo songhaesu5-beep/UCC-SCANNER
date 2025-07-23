@@ -42,15 +42,14 @@
     function startScanner() {
       const qrScanner = new Html5Qrcode("reader");
 
+      const boxWidth = Math.floor(window.innerWidth * 0.9);  // 가로의 90%
+      const boxHeight = Math.floor(boxWidth * 0.3);          // 가로의 절반
+
       qrScanner.start(
         { facingMode: "environment" },
         {
           fps: 10,
-          qrbox: (viewport) => {
-            const width = Math.floor(viewport.width * 0.9);   // 가로 90%
-            const height = Math.floor(width * 0.3);            // 세로는 가로의 30%
-            return { width, height };
-          }
+          qrbox: { width: boxWidth, height: boxHeight }
         },
         code => {
           qrScanner.stop().then(() => {
