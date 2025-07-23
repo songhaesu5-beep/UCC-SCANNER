@@ -54,31 +54,32 @@
     const SCAN_URL_BASE = "https://script.google.com/macros/s/AKfycbwZlgJ72ZviXPshy6eyB1b9tW0w6Z5sC6RDxhsXM0mW7wBC8BksuKsDpla9Fs26jl6y1Q/exec?code=";
 
     function startScanner() {
-      const readerSize = {
-        width: window.innerWidth,
-        height: window.innerHeight
-      };
+  const qrScanner = new Html5Qrcode("reader");
+  const readerElement = document.getElementById("reader");
+  const readerWidth = readerElement.offsetWidth;
+  const readerHeight = window.innerHeight;
 
-      const qrScanner = new Html5Qrcode("reader");
+  const qrboxWidth = Math.floor(readerWidth * 0.9);    // 가로의 90%
+  const qrboxHeight = Math.floor(readerHeight * 0.13); // 화면 높이의 13%
 
-      const qrboxWidth = Math.floor(readerSize.width * 0.9);   // 90% 가로
-      const qrboxHeight = Math.floor(readerSize.height * 0.13); //
-
-      qrScanner.start(
-        { facingMode: "environment" },
-        {
-          fps: 10,
-          qrbox: { width: qrboxWidth, height: qrboxHeight }
-        },
-        code => {
-          qrScanner.stop().then(() => {
-            handleScan(code, qrScanner);
-          });
-        }
-      ).catch(err => {
-        showFeedback("❌<br>카메라 접근 실패", "red");
+  qrScanner.start(
+    { facingMode: "environment" },
+    {
+      fps: 10,
+      qrbox: { width: qrboxWidth, height: qrboxHeight }
+    },
+    code => {
+      qrScanner.stop().then(() => {
+        handleScan(code, qrScanner);
       });
     }
+  ).catch(err => {
+    const fb = document.getElementById("feedback");
+    fb.innerHTML = "❌ 카메라 접근 실패<br>" + err;
+    fb.style.color = "red";
+  });
+}
+
 
     function handleScan(code, qrScanner) {
       fetch(SCAN_URL_BASE + encodeURIComponent(code))
