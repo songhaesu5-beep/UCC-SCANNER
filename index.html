@@ -106,14 +106,14 @@
             feedback.innerHTML = `🔁 DUP<br>${sscc}<br>Carton: ${carton}`;
             feedback.style.color = "orange";
           } else {
-            feedback.innerHTML = "❌<br>등록되지 않음";
+            feedback.innerHTML = "❌<br>Not Registered";
             feedback.style.color = "red";
           }
 
           nextButton.style.display = "block";
         })
         .catch(() => {
-          feedback.innerHTML = "❌<br>서버 오류";
+          feedback.innerHTML = "❌<br>Server Error";
           feedback.style.color = "red";
           nextButton.style.display = "block";
         });
