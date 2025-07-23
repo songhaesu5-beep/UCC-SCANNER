@@ -10,16 +10,13 @@
       padding: 0;
       overflow: hidden;
       height: 100%;
-      width: 100%;
-      background-color: black;
+      background: black;
     }
 
     #reader {
-      position: absolute;
-      top: 0;
-      left: 0;
       width: 100vw;
       height: 100vh;
+      position: relative;
     }
 
     #feedback {
@@ -30,8 +27,8 @@
       font-size: 5em;
       font-weight: bold;
       color: white;
-      text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
       z-index: 1000;
+      text-shadow: 2px 2px 8px black;
     }
   </style>
 </head>
@@ -42,24 +39,20 @@
   <script>
     const SCAN_URL_BASE = "https://script.google.com/macros/s/AKfycbwZlgJ72ZviXPshy6eyB1b9tW0w6Z5sC6RDxhsXM0mW7wBC8BksuKsDpla9Fs26jl6y1Q/exec?code=";
 
-    function getQrboxSize() {
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
-      const width = Math.floor(vw * 0.9);          // 가로: 화면의 90%
-      const height = Math.floor(vh * 0.13);        // 세로: 화면의 13% (절반으로 줄임)
-      return { width, height };
-    }
-
     function startScanner() {
       const qrScanner = new Html5Qrcode("reader");
 
-      const qrboxSize = getQrboxSize();
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+
+      const qrboxWidth = Math.floor(vw * 0.9);     // 90% of viewport width
+      const qrboxHeight = Math.floor(vh * 0.13);   // 13% of viewport height
 
       qrScanner.start(
         { facingMode: "environment" },
         {
           fps: 10,
-          qrbox: qrboxSize
+          qrbox: { width: qrboxWidth, height: qrboxHeight }
         },
         code => {
           qrScanner.stop().then(() => {
@@ -91,7 +84,7 @@
 
           setTimeout(() => {
             feedback.innerHTML = "";
-            startScanner(); // 다시 스캔
+            startScanner(); // 재시작
           }, 1500);
         })
         .catch(() => {
