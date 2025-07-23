@@ -42,17 +42,17 @@
     function startScanner() {
       const qrScanner = new Html5Qrcode("reader");
 
-     qrScanner.start(
-  { facingMode: "environment" },
-  {
-    fps: 10,
-    qrbox: function(viewfinderSize) {
-      const width = Math.floor(viewfinderSize.width * 0.9);
-      const height = Math.floor(width * 0.3);
-      return { width, height };
-    }
-  },
-
+      qrScanner.start(
+        { facingMode: "environment" },
+        {
+          fps: 10,
+          qrbox: (viewport) => {
+            const width = Math.floor(viewport.width * 0.9); // 가로 90%
+            const height = Math.floor(width * 0.3);          // 세로는 가로의 30%
+            return { width, height };
+          },
+          aspectRatio: 1.777 // 16:9 화면 비율로 명시해주면 모바일에서 안정됨
+        },
         code => {
           qrScanner.stop().then(() => {
             handleScan(code);
