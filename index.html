@@ -5,69 +5,104 @@
   <title>UCC SCANNER</title>
   <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+      background-color: black;
+    }
+
     #reader {
-      width: 100%;
-      max-width: 600px;
-      margin: auto;
-      border: 2px dashed #888;
-      min-height: 300px;
+      width: 100vw;
+      height: 100vh;
+      position: relative;
     }
+
     #feedback {
-      font-size: 3em;
+      position: absolute;
+      top: 10%;
+      width: 100%;
       text-align: center;
-      margin-top: 20px;
+      font-size: 5em;
+      font-weight: bold;
+      z-index: 999;
+      color: white;
+      text-shadow: 2px 2px 5px #000;
     }
-    h2 {
+
+    #overlay-text {
+      position: absolute;
+      top: 0;
+      width: 100%;
       text-align: center;
+      font-size: 1.2em;
+      font-weight: bold;
+      color: white;
+      padding-top: 10px;
+      z-index: 998;
     }
   </style>
   <link rel="icon" href="data:,">
 </head>
 <body>
-  <h2>UCC-SCANNER</h2>
   <div id="reader"></div>
   <div id="feedback"></div>
+  <div id="overlay-text">UCC-SCANNER</div>
 
   <script>
     const SCAN_URL_BASE = "https://script.google.com/macros/s/AKfycbwZlgJ72ZviXPshy6eyB1b9tW0w6Z5sC6RDxhsXM0mW7wBC8BksuKsDpla9Fs26jl6y1Q/exec?code=";
 
     function startScanner() {
+      const readerSize = {
+        width: window.innerWidth,
+        height: window.innerHeight
+      };
+
       const qrScanner = new Html5Qrcode("reader");
+
+      const qrboxWidth = Math.floor(readerSize.width * 0.9);   // 90% 가로
+      const qrboxHeight = Math.floor(readerSize.height * 0.3); // 30% 세로
+
       qrScanner.start(
         { facingMode: "environment" },
-        { fps: 10, qrbox: { width: 300, height: 150 } },
+        {
+          fps: 10,
+          qrbox: { width: qrboxWidth, height: qrboxHeight }
+        },
         code => {
           qrScanner.stop().then(() => {
             handleScan(code, qrScanner);
           });
         }
       ).catch(err => {
-        const fb = document.getElementById("feedback");
-        fb.innerHTML = "❌ 카메라 접근 실패<br>" + err;
-        fb.style.color = "red";
+        showFeedback("❌<br>카메라 접근 실패", "red");
       });
     }
 
     function handleScan(code, qrScanner) {
-      const feedback = document.getElementById("feedback");
       fetch(SCAN_URL_BASE + encodeURIComponent(code))
         .then(res => res.text())
         .then(result => {
           if (result.includes("✓")) {
-            feedback.innerHTML = "✅";
-            feedback.style.color = "green";
+            showFeedback("✅", "lime");
           } else if (result.includes("DUP")) {
-            feedback.innerHTML = "🔁 DUP";
-            feedback.style.color = "orange";
+            showFeedback("🔁 DUP", "orange");
           } else {
-            feedback.innerHTML = "❌";
-            feedback.style.color = "red";
+            showFeedback("❌", "red");
           }
+
           setTimeout(() => {
-            feedback.innerHTML = "";
+            clearFeedback();
             qrScanner.start(
               { facingMode: "environment" },
-              { fps: 10, qrbox: { width: 300, height: 150 } },
+              {
+                fps: 10,
+                qrbox: {
+                  width: Math.floor(window.innerWidth * 0.9),
+                  height: Math.floor(window.innerHeight * 0.3)
+                }
+              },
               newCode => {
                 qrScanner.stop().then(() => handleScan(newCode, qrScanner));
               }
@@ -75,9 +110,18 @@
           }, 1500);
         })
         .catch(() => {
-          feedback.innerHTML = "❌ 서버 오류";
-          feedback.style.color = "red";
+          showFeedback("❌<br>서버 오류", "red");
         });
+    }
+
+    function showFeedback(msg, color) {
+      const fb = document.getElementById("feedback");
+      fb.innerHTML = msg;
+      fb.style.color = color;
+    }
+
+    function clearFeedback() {
+      document.getElementById("feedback").innerHTML = "";
     }
 
     window.addEventListener("DOMContentLoaded", () => {
