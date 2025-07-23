@@ -8,121 +8,96 @@
     html, body {
       margin: 0;
       padding: 0;
-      height: 100%;
       overflow: hidden;
+      height: 100%;
+      width: 100%;
       background-color: black;
     }
 
     #reader {
+      position: absolute;
+      top: 0;
+      left: 0;
       width: 100vw;
       height: 100vh;
-      position: relative;
     }
 
     #feedback {
       position: absolute;
-      top: 10%;
-      width: 100%;
-      text-align: center;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
       font-size: 5em;
       font-weight: bold;
-      z-index: 999;
       color: white;
-      text-shadow: 2px 2px 5px #000;
-    }
-
-    #overlay-text {
-      position: absolute;
-      top: 0;
-      width: 100%;
-      text-align: center;
-      font-size: 1.2em;
-      font-weight: bold;
-      color: white;
-      padding-top: 10px;
-      z-index: 998;
+      text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
+      z-index: 1000;
     }
   </style>
-  <link rel="icon" href="data:,">
 </head>
 <body>
   <div id="reader"></div>
   <div id="feedback"></div>
-  <div id="overlay-text">UCC-SCANNER</div>
 
   <script>
     const SCAN_URL_BASE = "https://script.google.com/macros/s/AKfycbwZlgJ72ZviXPshy6eyB1b9tW0w6Z5sC6RDxhsXM0mW7wBC8BksuKsDpla9Fs26jl6y1Q/exec?code=";
 
+    function getQrboxSize() {
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const width = Math.floor(vw * 0.9);          // 가로: 화면의 90%
+      const height = Math.floor(vh * 0.13);        // 세로: 화면의 13% (절반으로 줄임)
+      return { width, height };
+    }
+
     function startScanner() {
-  const qrScanner = new Html5Qrcode("reader");
-  const readerElement = document.getElementById("reader");
-  const readerWidth = readerElement.offsetWidth;
-  const readerHeight = window.innerHeight;
+      const qrScanner = new Html5Qrcode("reader");
 
-  const qrboxWidth = Math.floor(readerWidth * 0.9);    // 가로의 90%
-  const qrboxHeight = Math.floor(readerHeight * 0.13); // 화면 높이의 13%
+      const qrboxSize = getQrboxSize();
 
-  qrScanner.start(
-    { facingMode: "environment" },
-    {
-      fps: 10,
-      qrbox: { width: qrboxWidth, height: qrboxHeight }
-    },
-    code => {
-      qrScanner.stop().then(() => {
-        handleScan(code, qrScanner);
+      qrScanner.start(
+        { facingMode: "environment" },
+        {
+          fps: 10,
+          qrbox: qrboxSize
+        },
+        code => {
+          qrScanner.stop().then(() => {
+            handleScan(code, qrScanner);
+          });
+        }
+      ).catch(err => {
+        const fb = document.getElementById("feedback");
+        fb.innerHTML = "❌ 카메라 접근 실패<br>" + err;
+        fb.style.color = "red";
       });
     }
-  ).catch(err => {
-    const fb = document.getElementById("feedback");
-    fb.innerHTML = "❌ 카메라 접근 실패<br>" + err;
-    fb.style.color = "red";
-  });
-}
-
 
     function handleScan(code, qrScanner) {
+      const feedback = document.getElementById("feedback");
       fetch(SCAN_URL_BASE + encodeURIComponent(code))
         .then(res => res.text())
         .then(result => {
           if (result.includes("✓")) {
-            showFeedback("✅", "lime");
+            feedback.innerHTML = "✅";
+            feedback.style.color = "lime";
           } else if (result.includes("DUP")) {
-            showFeedback("🔁 DUP", "orange");
+            feedback.innerHTML = "🔁 DUP";
+            feedback.style.color = "orange";
           } else {
-            showFeedback("❌", "red");
+            feedback.innerHTML = "❌";
+            feedback.style.color = "red";
           }
 
           setTimeout(() => {
-            clearFeedback();
-            qrScanner.start(
-              { facingMode: "environment" },
-              {
-                fps: 10,
-                qrbox: {
-                  width: Math.floor(window.innerWidth * 0.9),
-                  height: Math.floor(window.innerHeight * 0.3)
-                }
-              },
-              newCode => {
-                qrScanner.stop().then(() => handleScan(newCode, qrScanner));
-              }
-            );
+            feedback.innerHTML = "";
+            startScanner(); // 다시 스캔
           }, 1500);
         })
         .catch(() => {
-          showFeedback("❌<br>서버 오류", "red");
+          feedback.innerHTML = "❌ 서버 오류";
+          feedback.style.color = "red";
         });
-    }
-
-    function showFeedback(msg, color) {
-      const fb = document.getElementById("feedback");
-      fb.innerHTML = msg;
-      fb.style.color = color;
-    }
-
-    function clearFeedback() {
-      document.getElementById("feedback").innerHTML = "";
     }
 
     window.addEventListener("DOMContentLoaded", () => {
