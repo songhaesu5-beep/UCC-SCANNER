@@ -96,14 +96,17 @@
         .then(result => {
           const parts = result.split(":");
           const status = parts[0];
+          const row = parts[1] || "";
           const sscc = parts[2] || "";
           const carton = parts[3] || "";
+          const scanned = parts[4] || "";
+          const total = parts[5] || "";
 
           if (status === "✓") {
-            feedback.innerHTML = `✅<br>${sscc}<br>Carton: ${carton}`;
+            feedback.innerHTML = `✅<br>SSCC: ${sscc}<br>Carton: ${carton}<br>Row: ${row}<br>Loading Status: ${scanned} / ${total}`;
             feedback.style.color = "lime";
           } else if (status === "DUP") {
-            feedback.innerHTML = `🔁 DUP<br>${sscc}<br>Carton: ${carton}`;
+            feedback.innerHTML = `🔁 DUP<br>SSCC: ${sscc}<br>Carton: ${carton}<br>Row: ${row}<br>Loading Status: ${scanned} / ${total}`;
             feedback.style.color = "orange";
           } else {
             feedback.innerHTML = "❌<br>Not Registered";
