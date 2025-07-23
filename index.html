@@ -24,11 +24,11 @@
       top: 40%;
       left: 50%;
       transform: translate(-50%, -50%);
-      font-size: 10em; /* ✅ 피드백 크기 크게 */
+      font-size: 10em; /* ✅ 피드백 크기 크게 조정 */
       font-weight: bold;
       color: white;
       z-index: 1000;
-      text-shadow: 3px 3px 10px black;
+      text-shadow: 4px 4px 12px black;
     }
   </style>
 </head>
@@ -39,18 +39,17 @@
   <script>
     const SCAN_URL_BASE = "https://script.google.com/macros/s/AKfycbwZlgJ72ZviXPshy6eyB1b9tW0w6Z5sC6RDxhsXM0mW7wBC8BksuKsDpla9Fs26jl6y1Q/exec?code=";
 
-    // ✅ 여기서 스캔 박스 크기 직접 설정
-    const qrboxWidth = 600;   // 가로 픽셀 수
-    const qrboxHeight = 30;   // 세로 픽셀 수 (원하는 만큼 줄이세요)
-
     function startScanner() {
       const qrScanner = new Html5Qrcode("reader");
+
+      const boxWidth = Math.floor(window.innerWidth * 0.9);  // 가로의 90%
+      const boxHeight = Math.floor(boxWidth * 0.1);          // 가로의 30%
 
       qrScanner.start(
         { facingMode: "environment" },
         {
           fps: 10,
-          qrbox: { width: qrboxWidth, height: qrboxHeight }
+          qrbox: { width: boxWidth, height: boxHeight }
         },
         code => {
           qrScanner.stop().then(() => {
