@@ -24,11 +24,12 @@
       top: 40%;
       left: 50%;
       transform: translate(-50%, -50%);
-      font-size: 5em;
+      font-size: 10em; /* ✅ 더 크게 */
       font-weight: bold;
       color: white;
       z-index: 1000;
       text-shadow: 2px 2px 8px black;
+      pointer-events: none;
     }
   </style>
 </head>
@@ -42,14 +43,15 @@
     function startScanner() {
       const qrScanner = new Html5Qrcode("reader");
 
-      const boxWidth = Math.floor(window.innerWidth * 0.9);  // 가로의 90%
-      const boxHeight = Math.floor(boxWidth * 0.3);          // 가로의 절반
-
       qrScanner.start(
         { facingMode: "environment" },
         {
           fps: 10,
-          qrbox: { width: boxWidth, height: boxHeight }
+          qrbox: (viewport) => {
+            const width = Math.floor(viewport.width * 0.9);
+            const height = Math.floor(width * 0.2);  // ✅ 세로 길이: 가로의 20%
+            return { width, height };
+          }
         },
         code => {
           qrScanner.stop().then(() => {
