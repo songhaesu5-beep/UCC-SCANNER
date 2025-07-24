@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>UCC SCANNER 설정</title>
+  <title>UCC SCANNER Setup</title>
   <style>
     body {
       background-color: black;
@@ -32,7 +32,7 @@
   </style>
 </head>
 <body>
-  <h1>📦 UCC SCANNER 설정</h1>
+  <h1>📦 UCC SCANNER Setup</h1>
 
   <label for="month">Month:</label>
   <input type="number" id="month" min="1" max="12" required>
@@ -48,7 +48,7 @@
   </select>
 
   <br><br>
-  <button onclick="startScanner()">▶ SCAN 시작</button>
+  <button onclick="startScanner()">▶ Start Scanning</button>
 
   <script>
     function startScanner() {
@@ -57,7 +57,7 @@
       const buyer = document.getElementById("buyer").value;
 
       if (!month || !day || !buyer) {
-        alert("날짜와 Buyer를 모두 입력해주세요.");
+        alert("Please enter Month, Day, and select a Buyer.");
         return;
       }
 
