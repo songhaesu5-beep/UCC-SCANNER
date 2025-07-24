@@ -60,26 +60,22 @@
   <button id="nextButton" onclick="restartScanner()">NEXT</button>
 
   <script>
-    const urlParams = new URLSearchParams(window.location.search);
-    const month = urlParams.get("month");
-    const day = urlParams.get("day");
-    const buyer = urlParams.get("buyer");
-
-    const SCAN_URL_BASE = `https://script.google.com/macros/s/AKfycbxAPI3xgaD7q-1okrdglubNIYb2G6uMmRJfF8HvcusJvOMv-3339LpzWLF0KvzG34rMDg/exec`;
+    const SCAN_URL_BASE = "https://script.google.com/macros/s/AKfycbz-JNs5v-Qez63lGyA6JU3u4jjw442Oks5igbxMCIHyaXARTLrhNt3r5_mdjuwhytKsHA/exec?code=";
 
     let qrScanner;
 
     function startScanner() {
       qrScanner = new Html5Qrcode("reader");
 
+      // ✅ 바코드에 최적화된 가로형 스캐너 박스
       const boxWidth = Math.floor(window.innerWidth * 0.9);
-      const boxHeight = Math.floor(boxWidth * 0.25);
+      const boxHeight = Math.floor(boxWidth * 0.25); // 가로는 넓게, 세로는 얇게
 
       qrScanner.start(
-        { facingMode: { exact: "environment" } },
+        { facingMode: { exact: "environment" } },  // 후면 고화질 카메라 요청
         {
           fps: 15,
-          qrbox: { width: boxWidth, height: boxHeight }
+          qrbox: { width: boxWidth, height: boxHeight }  // 가로형 박스
         },
         code => {
           qrScanner.stop().then(() => {
@@ -97,8 +93,7 @@
       const feedback = document.getElementById("feedback");
       const nextButton = document.getElementById("nextButton");
 
-      const query = `?code=${encodeURIComponent(code)}&month=${month}&day=${day}&buyer=${buyer}`;
-      fetch(SCAN_URL_BASE + query)
+      fetch(SCAN_URL_BASE + encodeURIComponent(code))
         .then(res => res.text())
         .then(result => {
           const parts = result.split(":");
@@ -140,12 +135,7 @@
     }
 
     window.addEventListener("DOMContentLoaded", () => {
-      if (!month || !day || !buyer) {
-        alert("날짜와 Buyer 정보가 누락되었습니다. 처음 화면으로 돌아갑니다.");
-        window.location.href = "index.html";
-      } else {
-        startScanner();
-      }
+      startScanner();
     });
   </script>
 </body>
