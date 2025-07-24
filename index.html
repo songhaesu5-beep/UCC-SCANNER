@@ -2,141 +2,80 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>UCC SCANNER</title>
-  <script src="https://unpkg.com/html5-qrcode"></script>
+  <title>UCC SCANNER - 날짜/바이어 선택</title>
   <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      height: 100%;
-      background: black;
-    }
-
-    #reader {
-      width: 100vw;
+    body {
+      background-color: black;
+      color: white;
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
       height: 100vh;
-      position: relative;
+      margin: 0;
     }
 
-    #feedback {
-      position: absolute;
-      top: 30%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 4.5em;
-      font-weight: bold;
-      color: white;
-      z-index: 1000;
-      text-align: center;
-      text-shadow: 2px 2px 8px black;
-      white-space: pre-line;
+    h1 {
+      margin-bottom: 30px;
     }
 
-    #nextButton {
-      position: absolute;
-      bottom: 10%;
-      left: 50%;
-      transform: translateX(-50%);
-      padding: 20px 40px;
-      font-size: 2em;
-      background-color: #333;
-      color: white;
+    label {
+      font-size: 1.5em;
+      margin-top: 10px;
+    }
+
+    input, select, button {
+      font-size: 1.5em;
+      margin: 10px;
+      padding: 10px 20px;
+      border-radius: 10px;
       border: none;
-      border-radius: 12px;
-      cursor: pointer;
-      z-index: 1001;
-      display: none;
     }
 
-    #nextButton:hover {
-      background-color: #555;
+    button {
+      background-color: #00aa00;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #007700;
     }
   </style>
 </head>
 <body>
-  <div id="reader"></div>
-  <div id="feedback"></div>
-  <button id="nextButton" onclick="restartScanner()">NEXT</button>
+  <h1>📦 UCC SCANNER</h1>
+  <label for="month">Month</label>
+  <input type="number" id="month" min="1" max="12" required>
+
+  <label for="day">Day</label>
+  <input type="number" id="day" min="1" max="31" required>
+
+  <label for="buyer">Buyer</label>
+  <select id="buyer">
+    <option value="MMJ">MMJ</option>
+    <option value="MK">MK</option>
+    <option value="COACH">COACH</option>
+  </select>
+
+  <button onclick="goToScanner()">START</button>
 
   <script>
-    const SCAN_URL_BASE = "https://script.google.com/macros/s/AKfycbxAPI3xgaD7q-1okrdglubNIYb2G6uMmRJfF8HvcusJvOMv-3339LpzWLF0KvzG34rMDg/exec?code=";
+    function goToScanner() {
+      const month = document.getElementById("month").value;
+      const day = document.getElementById("day").value;
+      const buyer = document.getElementById("buyer").value;
 
-    let qrScanner;
+      if (!month || !day || !buyer) {
+        alert("모든 값을 입력해주세요.");
+        return;
+      }
 
-    function startScanner() {
-      qrScanner = new Html5Qrcode("reader");
-
-      // ✅ 바코드에 최적화된 가로형 스캐너 박스
-      const boxWidth = Math.floor(window.innerWidth * 0.9);
-      const boxHeight = Math.floor(boxWidth * 0.25); // 가로는 넓게, 세로는 얇게
-
-      qrScanner.start(
-        { facingMode: { exact: "environment" } },  // 후면 고화질 카메라 요청
-        {
-          fps: 15,
-          qrbox: { width: boxWidth, height: boxHeight }  // 가로형 박스
-        },
-        code => {
-          qrScanner.stop().then(() => {
-            handleScan(code);
-          });
-        }
-      ).catch(err => {
-        const fb = document.getElementById("feedback");
-        fb.innerHTML = "❌\n\nCamera Access Error\n\n" + err;
-        fb.style.color = "red";
-      });
+      // 이동할 scanner 페이지에 쿼리스트링 전달
+      const query = `?month=${month}&day=${day}&buyer=${buyer}`;
+      window.location.href = `scanner.html${query}`;
     }
-
-    function handleScan(code) {
-      const feedback = document.getElementById("feedback");
-      const nextButton = document.getElementById("nextButton");
-
-      fetch(SCAN_URL_BASE + encodeURIComponent(code))
-        .then(res => res.text())
-        .then(result => {
-          const parts = result.split(":");
-          const status = parts[0];
-          const row = parts[1] || "";
-          const sscc = parts[2] || "";
-          const carton = parts[3] || "";
-          const scanned = parts[4] || "";
-          const total = parts[5] || "";
-
-          if (status === "✓") {
-            feedback.innerHTML =
-              `✅\n\nSSCC: ${sscc}\n\nCarton: ${carton}\n\nRow: ${row}\n\nLoading Status: ${scanned} / ${total}`;
-            feedback.style.color = "lime";
-          } else if (status === "DUP") {
-            feedback.innerHTML =
-              `🔁 DUP\n\nSSCC: ${sscc}\n\nCarton: ${carton}\n\nRow: ${row}\n\nLoading Status: ${scanned} / ${total}`;
-            feedback.style.color = "orange";
-          } else {
-            feedback.innerHTML = "❌\n\nNot Registered";
-            feedback.style.color = "red";
-          }
-
-          nextButton.style.display = "block";
-        })
-        .catch(() => {
-          feedback.innerHTML = "❌\n\nServer Error";
-          feedback.style.color = "red";
-          nextButton.style.display = "block";
-        });
-    }
-
-    function restartScanner() {
-      const feedback = document.getElementById("feedback");
-      const nextButton = document.getElementById("nextButton");
-      feedback.innerHTML = "";
-      nextButton.style.display = "none";
-      startScanner();
-    }
-
-    window.addEventListener("DOMContentLoaded", () => {
-      startScanner();
-    });
   </script>
 </body>
 </html>
