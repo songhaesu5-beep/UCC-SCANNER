@@ -67,14 +67,11 @@
     function startScanner() {
       qrScanner = new Html5Qrcode("reader");
 
-      const boxWidth = Math.floor(window.innerWidth * 0.9);
-      const boxHeight = Math.floor(boxWidth * 0.3);
-
       qrScanner.start(
-        { facingMode: "environment" },
+        { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 } },
         {
           fps: 10,
-          qrbox: { width: boxWidth, height: boxHeight }
+          qrbox: false  // ✅ 전체 화면 인식
         },
         code => {
           qrScanner.stop().then(() => {
