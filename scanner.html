@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>UCC SCANNER</title>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      height: 100%;
+      background: black;
+    }
+
+    #reader {
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+    }
+
+    #feedback {
+      position: absolute;
+      top: 30%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 4.5em;
+      font-weight: bold;
+      color: white;
+      z-index: 1000;
+      text-align: center;
+      text-shadow: 2px 2px 8px black;
+      white-space: pre-line;
+    }
+
+    #nextButton {
+      position: absolute;
+      bottom: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 20px 40px;
+      font-size: 2em;
+      background-color: #333;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      z-index: 1001;
+      display: none;
+    }
+
+    #nextButton:hover {
+      background-color: #555;
+    }
+  </style>
+</head>
+<body>
+  <div id="reader"></div>
+  <div id="feedback"></div>
+  <button id="nextButton" onclick="restartScanner()">NEXT</button>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const month = urlParams.get("month");
+    const day = urlParams.get("day");
+    const buyer = urlParams.get("buyer");
+
+    const SCAN_URL_BASE = `https://script.google.com/macros/s/AKfycbxAPI3xgaD7q-1okrdglubNIYb2G6uMmRJfF8HvcusJvOMv-3339LpzWLF0KvzG34rMDg/exec`;
+
+    let qrScanner;
+
+    function startScanner() {
+      qrScanner = new Html5Qrcode("reader");
+
+      const boxWidth = Math.floor(window.innerWidth * 0.9);
+      const boxHeight = Math.floor(boxWidth * 0.25);
+
+      qrScanner.start(
+        { facingMode: { exact: "environment" } },
+        {
+          fps: 15,
+          qrbox: { width: boxWidth, height: boxHeight }
+        },
+        code => {
+          qrScanner.stop().then(() => {
+            handleScan(code);
+          });
+        }
+      ).catch(err => {
+        const fb = document.getElementById("feedback");
+        fb.innerHTML = "❌\n\nCamera Access Error\n\n" + err;
+        fb.style.color = "red";
+      });
+    }
+
+    function handleScan(code) {
+      const feedback = document.getElementById("feedback");
+      const nextButton = document.getElementById("nextButton");
+
+      const query = `?code=${encodeURIComponent(code)}&month=${month}&day=${day}&buyer=${buyer}`;
+      fetch(SCAN_URL_BASE + query)
+        .then(res => res.text())
+        .then(result => {
+          const parts = result.split(":");
+          const status = parts[0];
+          const row = parts[1] || "";
+          const sscc = parts[2] || "";
+          const carton = parts[3] || "";
+          const scanned = parts[4] || "";
+          const total = parts[5] || "";
+
+          if (status === "✓") {
+            feedback.innerHTML =
+              `✅\n\nSSCC: ${sscc}\n\nCarton: ${carton}\n\nRow: ${row}\n\nLoading Status: ${scanned} / ${total}`;
+            feedback.style.color = "lime";
+          } else if (status === "DUP") {
+            feedback.innerHTML =
+              `🔁 DUP\n\nSSCC: ${sscc}\n\nCarton: ${carton}\n\nRow: ${row}\n\nLoading Status: ${scanned} / ${total}`;
+            feedback.style.color = "orange";
+          } else {
+            feedback.innerHTML = "❌\n\nNot Registered";
+            feedback.style.color = "red";
+          }
+
+          nextButton.style.display = "block";
+        })
+        .catch(() => {
+          feedback.innerHTML = "❌\n\nServer Error";
+          feedback.style.color = "red";
+          nextButton.style.display = "block";
+        });
+    }
+
+    function restartScanner() {
+      const feedback = document.getElementById("feedback");
+      const nextButton = document.getElementById("nextButton");
+      feedback.innerHTML = "";
+      nextButton.style.display = "none";
+      startScanner();
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      if (!month || !day || !buyer) {
+        alert("날짜와 Buyer 정보가 누락되었습니다. 처음 화면으로 돌아갑니다.");
+        window.location.href = "index.html";
+      } else {
+        startScanner();
+      }
+    });
+  </script>
+</body>
+</html>
