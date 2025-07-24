@@ -68,10 +68,10 @@
       qrScanner = new Html5Qrcode("reader");
 
       qrScanner.start(
-        { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 } },
+        { facingMode: { exact: "environment" } }, // ✅ 후면 고화질 카메라 요청
         {
-          fps: 10,
-          qrbox: false  // ✅ 전체 화면 인식
+          fps: 15,        // 조금 더 민감하게
+          qrbox: false    // ✅ 전체 화면 인식
         },
         code => {
           qrScanner.stop().then(() => {
