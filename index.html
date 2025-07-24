@@ -67,11 +67,15 @@
     function startScanner() {
       qrScanner = new Html5Qrcode("reader");
 
+      // ✅ 바코드에 최적화된 가로형 스캐너 박스
+      const boxWidth = Math.floor(window.innerWidth * 0.9);
+      const boxHeight = Math.floor(boxWidth * 0.25); // 가로는 넓게, 세로는 얇게
+
       qrScanner.start(
-        { facingMode: { exact: "environment" } }, // ✅ 후면 고화질 카메라 요청
+        { facingMode: { exact: "environment" } },  // 후면 고화질 카메라 요청
         {
-          fps: 15,        // 조금 더 민감하게
-          qrbox: false    // ✅ 전체 화면 인식
+          fps: 15,
+          qrbox: { width: boxWidth, height: boxHeight }  // 가로형 박스
         },
         code => {
           qrScanner.stop().then(() => {
