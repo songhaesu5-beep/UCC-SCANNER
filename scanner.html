@@ -60,21 +60,16 @@
   <button id="nextButton" onclick="restartScanner()">NEXT</button>
 
   <script>
-    const MONTH = "7";
-    const DAY = "24";
-    const BUYER = "MMJ";
+    const params = new URLSearchParams(window.location.search);
+    const month = params.get("month");
+    const day = params.get("day");
+    const buyer = params.get("buyer");
 
-    const SCAN_URL_BASE = "https://script.google.com/macros/s/AKfycbxpLKcsV9IAlu_RB4i_NO2-EBVwqytkNdL1RKeN3PduQKMjiTwki2t7omGcvH6tHuw9Ng/exec";
+    const SCAN_URL_BASE = "https://script.google.com/macros/s/AKfycbzmGMctDPpv01O026P61iZc2rmER11ax1Un75iqZPQFUvsQKX3wCLdIIu1mjsfVRWoZAA/exec";
 
     let qrScanner;
 
     function startScanner() {
-      const qrRegion = document.getElementById("reader");
-      if (!Html5Qrcode.getCameras) {
-        alert("html5-qrcode library failed to load.");
-        return;
-      }
-
       qrScanner = new Html5Qrcode("reader");
 
       const boxWidth = Math.floor(window.innerWidth * 0.9);
@@ -82,10 +77,7 @@
 
       qrScanner.start(
         { facingMode: { exact: "environment" } },
-        {
-          fps: 15,
-          qrbox: { width: boxWidth, height: boxHeight }
-        },
+        { fps: 15, qrbox: { width: boxWidth, height: boxHeight } },
         code => {
           qrScanner.stop().then(() => {
             handleScan(code);
@@ -93,7 +85,7 @@
         }
       ).catch(err => {
         const fb = document.getElementById("feedback");
-        fb.innerHTML = "❌\n\nCamera Access Error\n\n" + err;
+        fb.innerHTML = "❌\n\nCamera Error\n\n" + err;
         fb.style.color = "red";
       });
     }
@@ -102,9 +94,9 @@
       const feedback = document.getElementById("feedback");
       const nextButton = document.getElementById("nextButton");
 
-      const url = `${SCAN_URL_BASE}?code=${encodeURIComponent(code)}&month=${MONTH}&day=${DAY}&buyer=${BUYER}`;
+      const fullURL = `${SCAN_URL_BASE}?code=${encodeURIComponent(code)}&month=${month}&day=${day}&buyer=${buyer}`;
 
-      fetch(url)
+      fetch(fullURL)
         .then(res => res.text())
         .then(result => {
           const parts = result.split(":");
@@ -138,15 +130,18 @@
     }
 
     function restartScanner() {
-      const feedback = document.getElementById("feedback");
-      const nextButton = document.getElementById("nextButton");
-      feedback.innerHTML = "";
-      nextButton.style.display = "none";
+      document.getElementById("feedback").innerHTML = "";
+      document.getElementById("nextButton").style.display = "none";
       startScanner();
     }
 
     window.addEventListener("DOMContentLoaded", () => {
-      startScanner();
+      if (!month || !day || !buyer) {
+        alert("잘못된 접근입니다. 날짜와 Buyer 정보가 필요합니다.");
+        window.location.href = "index.html";
+      } else {
+        startScanner();
+      }
     });
   </script>
 </body>
