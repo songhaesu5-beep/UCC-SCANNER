@@ -68,7 +68,7 @@
     const buyer = params.get("buyer");
 
     if (!month || !day || !buyer) {
-      alert("Missing URL parameters: month, day, buyer.");
+      alert("Missing parameters: month, day, or buyer.");
     }
 
     let qrScanner;
@@ -120,7 +120,7 @@
               `🔁 DUPLICATE\n\nSSCC: ${sscc}\n\nCarton: ${carton}\n\nRow: ${row}\n\nLoading Status: ${scanned} / ${total}`;
             feedback.style.color = "orange";
           } else {
-            feedback.innerHTML = "❌\n\nNot Registered";
+            feedback.innerHTML = `❌\n\nNot Registered\n\nSSCC: ${code}`;
             feedback.style.color = "red";
           }
 
