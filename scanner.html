@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>UCC SCANNER</title>
@@ -60,18 +60,15 @@
   <button id="nextButton" onclick="restartScanner()">NEXT</button>
 
   <script>
-    const params = new URLSearchParams(window.location.search);
-    const month = params.get("month");
-    const day = params.get("day");
-    const buyer = params.get("buyer");
-
-    const SCAN_URL_BASE = "https://script.google.com/macros/s/AKfycbzmGMctDPpv01O026P61iZc2rmER11ax1Un75iqZPQFUvsQKX3wCLdIIu1mjsfVRWoZAA/exec";
+    const month = "7";
+    const day = "24";
+    const buyer = "MK";  // Change dynamically if needed
+    const SCAN_URL_BASE = "https://script.google.com/macros/s/AKfycbzZRHLv4ac6Rr6slGlEKL1uxgQqb60w6hSkdJzzhD6FMM7TU1rQBUjQQXI9n8fJzPm_TQ/exec";
 
     let qrScanner;
 
     function startScanner() {
       qrScanner = new Html5Qrcode("reader");
-
       const boxWidth = Math.floor(window.innerWidth * 0.9);
       const boxHeight = Math.floor(boxWidth * 0.25);
 
@@ -84,19 +81,13 @@
           });
         }
       ).catch(err => {
-        const fb = document.getElementById("feedback");
-        fb.innerHTML = "❌\n\nCamera Error\n\n" + err;
-        fb.style.color = "red";
+        showFeedback("❌\n\nCamera Access Error\n\n" + err, "red");
       });
     }
 
     function handleScan(code) {
-      const feedback = document.getElementById("feedback");
-      const nextButton = document.getElementById("nextButton");
-
-      const fullURL = `${SCAN_URL_BASE}?code=${encodeURIComponent(code)}&month=${month}&day=${day}&buyer=${buyer}`;
-
-      fetch(fullURL)
+      const url = `${SCAN_URL_BASE}?code=${encodeURIComponent(code)}&month=${month}&day=${day}&buyer=${buyer}`;
+      fetch(url)
         .then(res => res.text())
         .then(result => {
           const parts = result.split(":");
@@ -108,25 +99,31 @@
           const total = parts[5] || "";
 
           if (status === "✓") {
-            feedback.innerHTML =
-              `✅\n\nSSCC: ${sscc}\n\nCarton: ${carton}\n\nRow: ${row}\n\nLoading Status: ${scanned} / ${total}`;
-            feedback.style.color = "lime";
+            showFeedback(
+              `✅\n\nSSCC: ${sscc}\n\nCarton: ${carton}\n\nRow: ${row}\n\nScanned: ${scanned} / ${total}`,
+              "lime"
+            );
           } else if (status === "DUP") {
-            feedback.innerHTML =
-              `🔁 DUP\n\nSSCC: ${sscc}\n\nCarton: ${carton}\n\nRow: ${row}\n\nLoading Status: ${scanned} / ${total}`;
-            feedback.style.color = "orange";
+            showFeedback(
+              `🔁 DUPLICATE\n\nSSCC: ${sscc}\n\nCarton: ${carton}\n\nRow: ${row}\n\nScanned: ${scanned} / ${total}`,
+              "orange"
+            );
           } else {
-            feedback.innerHTML = "❌\n\nNot Registered";
-            feedback.style.color = "red";
+            showFeedback("❌\n\nNot Registered", "red");
           }
 
-          nextButton.style.display = "block";
+          document.getElementById("nextButton").style.display = "block";
         })
         .catch(() => {
-          feedback.innerHTML = "❌\n\nServer Error";
-          feedback.style.color = "red";
-          nextButton.style.display = "block";
+          showFeedback("❌\n\nServer Error", "red");
+          document.getElementById("nextButton").style.display = "block";
         });
+    }
+
+    function showFeedback(text, color) {
+      const feedback = document.getElementById("feedback");
+      feedback.innerHTML = text;
+      feedback.style.color = color;
     }
 
     function restartScanner() {
@@ -135,14 +132,7 @@
       startScanner();
     }
 
-    window.addEventListener("DOMContentLoaded", () => {
-      if (!month || !day || !buyer) {
-        alert("잘못된 접근입니다. 날짜와 Buyer 정보가 필요합니다.");
-        window.location.href = "index.html";
-      } else {
-        startScanner();
-      }
-    });
+    window.addEventListener("DOMContentLoaded", startScanner);
   </script>
 </body>
 </html>
