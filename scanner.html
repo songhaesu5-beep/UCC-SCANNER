@@ -1,86 +1,153 @@
-<script>
-  // ✅ 필요한 정보 입력
-  const MONTH = "7";
-  const DAY = "24";
-  const BUYER = "MMJ";
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>UCC SCANNER</title>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      height: 100%;
+      background: black;
+    }
 
-  const SCAN_URL_BASE = `https://script.google.com/macros/s/AKfycbxaZSp4pi62sROhqhyDcRzFpBspjZWhCL9HDr7xx8Jb7lovTUKxj8h9ED2kWMnU-PEfVw/exec`;
+    #reader {
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+    }
 
-  let qrScanner;
+    #feedback {
+      position: absolute;
+      top: 30%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 4.5em;
+      font-weight: bold;
+      color: white;
+      z-index: 1000;
+      text-align: center;
+      text-shadow: 2px 2px 8px black;
+      white-space: pre-line;
+    }
 
-  function startScanner() {
-    qrScanner = new Html5Qrcode("reader");
+    #nextButton {
+      position: absolute;
+      bottom: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 20px 40px;
+      font-size: 2em;
+      background-color: #333;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      z-index: 1001;
+      display: none;
+    }
 
-    const boxWidth = Math.floor(window.innerWidth * 0.9);
-    const boxHeight = Math.floor(boxWidth * 0.25);
+    #nextButton:hover {
+      background-color: #555;
+    }
+  </style>
+</head>
+<body>
+  <div id="reader"></div>
+  <div id="feedback"></div>
+  <button id="nextButton" onclick="restartScanner()">NEXT</button>
 
-    qrScanner.start(
-      { facingMode: { exact: "environment" } },
-      {
-        fps: 15,
-        qrbox: { width: boxWidth, height: boxHeight }
-      },
-      code => {
-        qrScanner.stop().then(() => {
-          handleScan(code);
-        });
+  <script>
+    const MONTH = "7";
+    const DAY = "24";
+    const BUYER = "MMJ";
+
+    const SCAN_URL_BASE = "https://script.google.com/macros/s/AKfycbxaZSp4pi62sROhqhyDcRzFpBspjZWhCL9HDr7xx8Jb7lovTUKxj8h9ED2kWMnU-PEfVw/exec";
+
+    let qrScanner;
+
+    function startScanner() {
+      const qrRegion = document.getElementById("reader");
+      if (!Html5Qrcode.getCameras) {
+        alert("html5-qrcode library failed to load.");
+        return;
       }
-    ).catch(err => {
-      const fb = document.getElementById("feedback");
-      fb.innerHTML = "❌\n\nCamera Access Error\n\n" + err;
-      fb.style.color = "red";
-    });
-  }
 
-  function handleScan(code) {
-    const feedback = document.getElementById("feedback");
-    const nextButton = document.getElementById("nextButton");
+      qrScanner = new Html5Qrcode("reader");
 
-    // ✅ 파라미터 포함 요청
-    const url = `${SCAN_URL_BASE}?code=${encodeURIComponent(code)}&month=${MONTH}&day=${DAY}&buyer=${BUYER}`;
+      const boxWidth = Math.floor(window.innerWidth * 0.9);
+      const boxHeight = Math.floor(boxWidth * 0.25);
 
-    fetch(url)
-      .then(res => res.text())
-      .then(result => {
-        const parts = result.split(":");
-        const status = parts[0];
-        const row = parts[1] || "";
-        const sscc = parts[2] || "";
-        const carton = parts[3] || "";
-        const scanned = parts[4] || "";
-        const total = parts[5] || "";
-
-        if (status === "✓") {
-          feedback.innerHTML =
-            `✅\n\nSSCC: ${sscc}\n\nCarton: ${carton}\n\nRow: ${row}\n\nLoading Status: ${scanned} / ${total}`;
-          feedback.style.color = "lime";
-        } else if (status === "DUP") {
-          feedback.innerHTML =
-            `🔁 DUP\n\nSSCC: ${sscc}\n\nCarton: ${carton}\n\nRow: ${row}\n\nLoading Status: ${scanned} / ${total}`;
-          feedback.style.color = "orange";
-        } else {
-          feedback.innerHTML = "❌\n\nNot Registered";
-          feedback.style.color = "red";
+      qrScanner.start(
+        { facingMode: { exact: "environment" } },
+        {
+          fps: 15,
+          qrbox: { width: boxWidth, height: boxHeight }
+        },
+        code => {
+          qrScanner.stop().then(() => {
+            handleScan(code);
+          });
         }
-
-        nextButton.style.display = "block";
-      })
-      .catch(() => {
-        feedback.innerHTML = "❌\n\nServer Error";
-        feedback.style.color = "red";
-        nextButton.style.display = "block";
+      ).catch(err => {
+        const fb = document.getElementById("feedback");
+        fb.innerHTML = "❌\n\nCamera Access Error\n\n" + err;
+        fb.style.color = "red";
       });
-  }
+    }
 
-  function restartScanner() {
-    const feedback = document.getElementById("feedback");
-    const nextButton = document.getElementById("nextButton");
-    feedback.innerHTML = "";
-    nextButton.style.display = "none";
-    startScanner();
-  }
+    function handleScan(code) {
+      const feedback = document.getElementById("feedback");
+      const nextButton = document.getElementById("nextButton");
 
-  window.addEventListener("DOMContentLoaded", () => {
-    startScanner();
-  });
-</script>
+      const url = `${SCAN_URL_BASE}?code=${encodeURIComponent(code)}&month=${MONTH}&day=${DAY}&buyer=${BUYER}`;
+
+      fetch(url)
+        .then(res => res.text())
+        .then(result => {
+          const parts = result.split(":");
+          const status = parts[0];
+          const row = parts[1] || "";
+          const sscc = parts[2] || "";
+          const carton = parts[3] || "";
+          const scanned = parts[4] || "";
+          const total = parts[5] || "";
+
+          if (status === "✓") {
+            feedback.innerHTML =
+              `✅\n\nSSCC: ${sscc}\n\nCarton: ${carton}\n\nRow: ${row}\n\nLoading Status: ${scanned} / ${total}`;
+            feedback.style.color = "lime";
+          } else if (status === "DUP") {
+            feedback.innerHTML =
+              `🔁 DUP\n\nSSCC: ${sscc}\n\nCarton: ${carton}\n\nRow: ${row}\n\nLoading Status: ${scanned} / ${total}`;
+            feedback.style.color = "orange";
+          } else {
+            feedback.innerHTML = "❌\n\nNot Registered";
+            feedback.style.color = "red";
+          }
+
+          nextButton.style.display = "block";
+        })
+        .catch(() => {
+          feedback.innerHTML = "❌\n\nServer Error";
+          feedback.style.color = "red";
+          nextButton.style.display = "block";
+        });
+    }
+
+    function restartScanner() {
+      const feedback = document.getElementById("feedback");
+      const nextButton = document.getElementById("nextButton");
+      feedback.innerHTML = "";
+      nextButton.style.display = "none";
+      startScanner();
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      startScanner();
+    });
+  </script>
+</body>
+</html>
