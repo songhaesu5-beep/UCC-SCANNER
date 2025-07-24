@@ -11,6 +11,7 @@
       overflow: hidden;
       height: 100%;
       background: black;
+      font-family: Arial, Helvetica, sans-serif;
     }
 
     #reader {
@@ -68,7 +69,7 @@
     const buyer = params.get("buyer");
 
     if (!month || !day || !buyer) {
-      alert("Missing parameters: month, day, or buyer.");
+      alert("Missing URL parameters: month, day, buyer.");
     }
 
     let qrScanner;
@@ -120,7 +121,7 @@
               `🔁 DUPLICATE\n\nSSCC: ${sscc}\n\nCarton: ${carton}\n\nRow: ${row}\n\nLoading Status: ${scanned} / ${total}`;
             feedback.style.color = "orange";
           } else {
-            feedback.innerHTML = `❌\n\nNot Registered\n\nSSCC: ${code}`;
+            feedback.innerHTML = "❌\n\nNot Registered";
             feedback.style.color = "red";
           }
 
