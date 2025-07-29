@@ -53,7 +53,7 @@
         return;
       }
 
-      const query = `type=${type}&po=${encodeURIComponent(po)}`;
+      const query = `type=${encodeURIComponent(type)}&po=${encodeURIComponent(po)}`;
       window.location.href = `scanner.html?${query}`;
     }
   </script>
