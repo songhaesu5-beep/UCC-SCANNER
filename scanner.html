@@ -14,7 +14,7 @@
       font-family: sans-serif;
     }
 
-    /* ✅ 고정 상단 표시용 오버레이 */
+    /* ✅ 상단 정보 표시용 */
     #infoOverlay {
       position: fixed;
       top: 20px;
@@ -86,10 +86,10 @@
   </style>
 </head>
 <body>
-  <!-- ✅ 고정 상단 표시 (QR 스캐너 밖) -->
+  <!-- ✅ 상단 Type / P/O 표시 -->
   <div id="infoOverlay"></div>
 
-  <!-- ✅ QR 스캐너 -->
+  <!-- QR 스캐너 -->
   <div id="reader"></div>
 
   <div id="feedback"></div>
@@ -163,6 +163,7 @@
     window.addEventListener("DOMContentLoaded", () => {
       startScanner();
 
+      // ✅ 상단 텍스트 표시
       const overlay = document.getElementById("infoOverlay");
       overlay.textContent = `Type: ${type}\nP/O: ${po}`;
     });
