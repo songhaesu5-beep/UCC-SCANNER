@@ -11,7 +11,6 @@
       text-align: center;
       padding-top: 100px;
     }
-
     input, select, button {
       font-size: 2em;
       padding: 10px;
@@ -19,13 +18,11 @@
       border-radius: 10px;
       border: none;
     }
-
     button {
       background-color: #4CAF50;
       color: white;
       cursor: pointer;
     }
-
     button:hover {
       background-color: #45a049;
     }
@@ -36,25 +33,28 @@
 
   <label for="type">Type:</label>
   <select id="type">
-    <option value="inbound">Inbound</option>
-    <option value="outbound">Outbound</option>
-  </select><br>
+    <option value="Inbound">Inbound</option>
+    <option value="Outbound">Outbound</option>
+  </select>
 
   <label for="po">P/O:</label>
-  <input type="text" id="po" required><br>
+  <input type="text" id="po" placeholder="e.g. 4516365821" required>
 
-  <button onclick="startScanning()">Start Scanning</button>
+  <br><br>
+  <button onclick="startScanner()">▶ Start Scanning</button>
 
   <script>
-    function startScanning() {
+    function startScanner() {
       const type = document.getElementById("type").value;
       const po = document.getElementById("po").value;
-      if (!po) {
-        alert("Please enter a P/O number");
+
+      if (!type || !po) {
+        alert("Please fill in all fields.");
         return;
       }
-      const url = `scanner.html?type=${type}&po=${encodeURIComponent(po)}`;
-      window.location.href = url;
+
+      const query = `type=${type}&po=${po}`;
+      window.location.href = `scanner.html?${query}`;
     }
   </script>
 </body>
