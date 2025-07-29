@@ -34,8 +34,11 @@
       white-space: pre-line;
     }
 
-    #nextButton, #homeButton {
+    #nextButton {
       position: absolute;
+      bottom: 15%;
+      left: 50%;
+      transform: translateX(-50%);
       padding: 20px 40px;
       font-size: 2em;
       background-color: #333;
@@ -44,22 +47,25 @@
       border-radius: 12px;
       cursor: pointer;
       z-index: 1001;
-    }
-
-    #nextButton {
-      bottom: 10%;
-      left: 50%;
-      transform: translateX(-50%);
       display: none;
     }
 
-    #homeButton {
-      bottom: 5%;
-      right: 5%;
+    #nextButton:hover {
+      background-color: #555;
     }
 
-    #nextButton:hover, #homeButton:hover {
+    #homeButton {
+      position: absolute;
+      bottom: 5%;
+      right: 5%;
+      padding: 20px 30px;
+      font-size: 1.5em;
       background-color: #555;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      z-index: 1002;
     }
   </style>
 </head>
@@ -70,7 +76,7 @@
   <button id="homeButton" onclick="goHome()">HOME</button>
 
   <script>
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbwltnVrxtsomojhdI8OkGAmqeQJ8EAZrOPbP0OBCMGsZSJp1pWKd44aGWs_M0JArAUYDQ/exec";
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbyE8BR7QaQfmQqvnxah7fgqLoe9jhgMdEffEXjMFSoDDEUaLmaTZhAwMYw1WZ6_B-OwIA/exec";
 
     const params = new URLSearchParams(window.location.search);
     const po = params.get("po");
@@ -101,26 +107,24 @@
       fetch(url)
         .then(res => res.text())
         .then(result => {
-          const parts = result.split(":");
-          const status = parts[0];
-          const row = parts[1] || "";
-          const sscc = parts[2] || "";
-          const statusText = parts[4] || "";
-
+          const [status, row, sscc, , extraStatus] = result.split(":");
           const feedback = document.getElementById("feedback");
           const nextButton = document.getElementById("nextButton");
 
+          let output = "";
+
           if (status === "✓") {
-            feedback.innerHTML = `✅\n\nSSCC: ${sscc}\n\nRow: ${row}\n\n${statusText}`;
-            feedback.style.color = "lime";
+            output = `✅\n\nSSCC: ${sscc}\n\nRow: ${row}`;
           } else if (status === "DUP") {
-            feedback.innerHTML = `🔁 DUPLICATE\n\nSSCC: ${sscc}\n\nRow: ${row}\n\n${statusText}`;
-            feedback.style.color = "orange";
+            output = `🔁 DUPLICATE\n\nSSCC: ${sscc}\n\nRow: ${row}`;
           } else {
-            feedback.innerHTML = "❌\n\nNot Registered";
-            feedback.style.color = "red";
+            output = "❌\n\nNot Registered";
           }
 
+          if (extraStatus) output += `\n\n${extraStatus}`;
+
+          feedback.innerHTML = output;
+          feedback.style.color = status === "✓" ? "lime" : (status === "DUP" ? "orange" : "red");
           nextButton.style.display = "block";
         });
     }
