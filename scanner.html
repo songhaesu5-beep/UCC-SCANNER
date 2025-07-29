@@ -1,108 +1,131 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>UCC SCANNER</title>
   <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
     html, body {
       margin: 0;
       padding: 0;
+      overflow: hidden;
       height: 100%;
-      background-color: black;
-      color: white;
+      background: black;
       font-family: sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
     }
 
     #reader {
-      width: 90%;
-      margin-top: 20px;
+      width: 100vw;
+      height: 100vh;
+      position: relative;
     }
 
     #feedback {
-      font-size: 2em;
-      margin: 20px;
-      text-align: center;
-    }
-
-    #status {
-      font-size: 1.5em;
-      margin-top: 10px;
-    }
-
-    #home {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      font-size: 1em;
-      padding: 10px 20px;
-      background: #444;
-      border: none;
-      border-radius: 10px;
+      position: absolute;
+      top: 30%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 4.5em;
+      font-weight: bold;
       color: white;
+      z-index: 1000;
+      text-align: center;
+      text-shadow: 2px 2px 8px black;
+      white-space: pre-line;
+    }
+
+    #nextButton {
+      position: absolute;
+      bottom: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 20px 40px;
+      font-size: 2em;
+      background-color: #333;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      z-index: 1001;
+      display: none;
+    }
+
+    #nextButton:hover {
+      background-color: #555;
     }
   </style>
 </head>
 <body>
-  <h2>UCC Scanner</h2>
   <div id="reader"></div>
   <div id="feedback"></div>
-  <div id="status"></div>
-  <button id="home" onclick="goHome()">Home</button>
+  <button id="nextButton" onclick="restartScanner()">NEXT</button>
 
   <script>
-    const urlParams = new URLSearchParams(window.location.search);
-    const type = urlParams.get("type");
-    const po = urlParams.get("po");
-    const endpoint = "https://script.google.com/macros/s/AKfycbxVlbWkVMdyN3Z33kkHJTAU-jSd3ytbU0pSVgn9CUqsgMPUolotJ96LIFKFMGrrywd5DA/exec";
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbwAbC9BiduMr-j3yUow9TfG7wYHLQxNvc8H9y9coAxDVCZKPIWm87P7NBYRzoHClQ2I0Q/exec";
 
-    function showFeedback(text, color) {
-      const feedback = document.getElementById("feedback");
-      feedback.innerHTML = text.replace(/:/g, "<br>");
-      feedback.style.color = color;
+    const params = new URLSearchParams(window.location.search);
+    const po = params.get("po");
+    const type = params.get("type");
+
+    let qrScanner;
+
+    function startScanner() {
+      qrScanner = new Html5Qrcode("reader");
+      const boxWidth = Math.floor(window.innerWidth * 0.9);
+      const boxHeight = Math.floor(boxWidth * 0.25);
+
+      qrScanner.start(
+        { facingMode: { exact: "environment" } },
+        { fps: 15, qrbox: { width: boxWidth, height: boxHeight } },
+        code => {
+          qrScanner.stop().then(() => {
+            handleScan(code);
+          });
+        }
+      ).catch(err => {
+        document.getElementById("feedback").innerHTML = "❌\n\nCamera Error\n\n" + err;
+      });
     }
 
-    function goHome() {
-      window.location.href = "index.html";
-    }
+    function handleScan(code) {
+      const url = `${GAS_URL}?code=${encodeURIComponent(code)}&type=${type}&po=${po}`;
 
-    function updateStatusDisplay(count) {
-      const statusDiv = document.getElementById("status");
-      if (type === "inbound") {
-        statusDiv.textContent = `Inbounded Status : ${count}`;
-      }
-    }
-
-    function handleScan(scannedCode) {
-      const requestUrl = `${endpoint}?code=${encodeURIComponent(scannedCode)}&po=${encodeURIComponent(po)}&type=${type}`;
-      fetch(requestUrl)
+      fetch(url)
         .then(res => res.text())
-        .then(text => {
-          const parts = text.split(":");
+        .then(result => {
+          const parts = result.split(":");
           const status = parts[0];
-          const code = parts[1];
-          const extra = parts[2] || "";
+          const row = parts[1] || "";
+          const sscc = parts[2] || "";
+          const carton = parts[3] || "";
+          const scanned = parts[4] || "";
+          const total = parts[5] || "";
+
+          const feedback = document.getElementById("feedback");
+          const nextButton = document.getElementById("nextButton");
 
           if (status === "✓") {
-            showFeedback(`✓<br>${code}`, "lightgreen");
-            if (type === "inbound") updateStatusDisplay(extra);
+            feedback.innerHTML = `✅\n\nSSCC: ${sscc}\n\nCarton: ${carton}\n\nRow: ${row}\n\nLoading Status: ${scanned} / ${total}`;
+            feedback.style.color = "lime";
           } else if (status === "DUP") {
-            showFeedback(`DUP<br>${code}`, "orange");
+            feedback.innerHTML = `🔁 DUPLICATE\n\nSSCC: ${sscc}\n\nCarton: ${carton}\n\nRow: ${row}\n\nLoading Status: ${scanned} / ${total}`;
+            feedback.style.color = "orange";
           } else {
-            showFeedback(`❌<br>${code}`, "red");
+            feedback.innerHTML = "❌\n\nNot Registered";
+            feedback.style.color = "red";
           }
+
+          nextButton.style.display = "block";
         });
     }
 
-    new Html5Qrcode("reader").start(
-      { facingMode: "environment" },
-      { fps: 10, qrbox: 250 },
-      handleScan
-    );
+    function restartScanner() {
+      document.getElementById("feedback").innerHTML = "";
+      document.getElementById("nextButton").style.display = "none";
+      startScanner();
+    }
+
+    window.addEventListener("DOMContentLoaded", startScanner);
   </script>
 </body>
 </html>
