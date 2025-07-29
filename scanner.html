@@ -20,6 +20,21 @@
       position: relative;
     }
 
+    /* ✅ QR 박스 위 오버레이 정보 */
+    #infoOverlay {
+      position: absolute;
+      top: 10px;
+      left: 20px;
+      font-size: 1.8em;
+      font-weight: bold;
+      color: white;
+      background-color: rgba(0, 0, 0, 0.4);
+      padding: 10px 20px;
+      border-radius: 10px;
+      z-index: 999;
+      white-space: pre-line;
+    }
+
     #feedback {
       position: absolute;
       top: 30%;
@@ -70,13 +85,17 @@
   </style>
 </head>
 <body>
-  <div id="reader"></div>
+  <div id="reader">
+    <!-- ✅ 여기에 Type/P/O 현황 표시 -->
+    <div id="infoOverlay"></div>
+  </div>
+
   <div id="feedback"></div>
   <button id="nextButton" onclick="restartScanner()">NEXT</button>
   <button id="homeButton" onclick="goHome()">HOME</button>
 
   <script>
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbylsTfUfc6UE6vjtLDwCPxdo7HSmB4DJTybzsCqeWMU0mcrsFun4fQkr-ewzmtXBzt25w/exec";
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbxVlbWkVMdyN3Z33kkHJTAU-jSd3ytbU0pSVgn9CUqsgMPUolotJ96LIFKFMGrrywd5DA/exec";
 
     const params = new URLSearchParams(window.location.search);
     const po = params.get("po");
@@ -139,7 +158,13 @@
       window.location.href = "index.html";
     }
 
-    window.addEventListener("DOMContentLoaded", startScanner);
+    window.addEventListener("DOMContentLoaded", () => {
+      startScanner();
+
+      // ✅ Type & P/O 상단에 표시
+      const overlay = document.getElementById("infoOverlay");
+      overlay.textContent = `Type: ${type}\nP/O: ${po}`;
+    });
   </script>
 </body>
 </html>
