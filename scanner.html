@@ -34,24 +34,37 @@
       white-space: pre-line;
     }
 
-    #nextButton {
+    #nextButton, #homeButton {
       position: absolute;
-      bottom: 10%;
-      left: 50%;
-      transform: translateX(-50%);
-      padding: 20px 40px;
-      font-size: 2em;
-      background-color: #333;
-      color: white;
+      font-size: 1.8em;
+      padding: 15px 30px;
       border: none;
       border-radius: 12px;
       cursor: pointer;
       z-index: 1001;
-      display: none;
+    }
+
+    #nextButton {
+      bottom: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #333;
+      color: white;
     }
 
     #nextButton:hover {
       background-color: #555;
+    }
+
+    #homeButton {
+      bottom: 5%;
+      right: 5%;
+      background-color: darkred;
+      color: white;
+    }
+
+    #homeButton:hover {
+      background-color: red;
     }
   </style>
 </head>
@@ -59,9 +72,10 @@
   <div id="reader"></div>
   <div id="feedback"></div>
   <button id="nextButton" onclick="restartScanner()">NEXT</button>
+  <button id="homeButton" onclick="goHome()">Home</button>
 
   <script>
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbwAbC9BiduMr-j3yUow9TfG7wYHLQxNvc8H9y9coAxDVCZKPIWm87P7NBYRzoHClQ2I0Q/exec";
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbyLBNK_2wbb7mK4DkLtHZjoM_lODLxi3dpqUlzKS8XD0gpitjq4J8SVh2IiHf1ix6JAOw/exec";
 
     const params = new URLSearchParams(window.location.search);
     const po = params.get("po");
@@ -97,25 +111,35 @@
           const status = parts[0];
           const row = parts[1] || "";
           const sscc = parts[2] || "";
-          const carton = parts[3] || "";
-          const scanned = parts[4] || "";
-          const total = parts[5] || "";
+          const total = parts[4] || "";
 
           const feedback = document.getElementById("feedback");
-          const nextButton = document.getElementById("nextButton");
 
-          if (status === "✓") {
-            feedback.innerHTML = `✅\n\nSSCC: ${sscc}\n\nCarton: ${carton}\n\nRow: ${row}\n\nLoading Status: ${scanned} / ${total}`;
-            feedback.style.color = "lime";
-          } else if (status === "DUP") {
-            feedback.innerHTML = `🔁 DUPLICATE\n\nSSCC: ${sscc}\n\nCarton: ${carton}\n\nRow: ${row}\n\nLoading Status: ${scanned} / ${total}`;
-            feedback.style.color = "orange";
-          } else {
-            feedback.innerHTML = "❌\n\nNot Registered";
-            feedback.style.color = "red";
+          if (type === "Inbound") {
+            if (status === "✓") {
+              feedback.innerHTML = `✅\n\nSSCC: ${code}\n\nInbounded Status : ${total}`;
+              feedback.style.color = "lime";
+            } else if (status === "DUP") {
+              feedback.innerHTML = `🔁 DUPLICATE\n\nSSCC: ${code}`;
+              feedback.style.color = "orange";
+            } else {
+              feedback.innerHTML = "❌\n\nError or not found";
+              feedback.style.color = "red";
+            }
+          } else if (type === "Outbound") {
+            if (status === "✓") {
+              feedback.innerHTML = `✅\n\nSSCC: ${sscc}\n\nRow: ${row}`;
+              feedback.style.color = "lime";
+            } else if (status === "DUP") {
+              feedback.innerHTML = `🔁 DUPLICATE\n\nSSCC: ${sscc}\n\nRow: ${row}`;
+              feedback.style.color = "orange";
+            } else {
+              feedback.innerHTML = "❌\n\nNot Registered";
+              feedback.style.color = "red";
+            }
           }
 
-          nextButton.style.display = "block";
+          document.getElementById("nextButton").style.display = "block";
         });
     }
 
@@ -123,6 +147,10 @@
       document.getElementById("feedback").innerHTML = "";
       document.getElementById("nextButton").style.display = "none";
       startScanner();
+    }
+
+    function goHome() {
+      window.location.href = "index.html";
     }
 
     window.addEventListener("DOMContentLoaded", startScanner);
