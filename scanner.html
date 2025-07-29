@@ -11,7 +11,7 @@
       overflow: hidden;
       height: 100%;
       background: black;
-      font-family: Arial, Helvetica, sans-serif;
+      font-family: sans-serif;
     }
 
     #reader {
@@ -61,22 +61,16 @@
   <button id="nextButton" onclick="restartScanner()">NEXT</button>
 
   <script>
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbwRQVZVrQ8cI9RP2XWDlFzUZolZpWTHzDSJQjpL1O8O1L93Q55P_-I-Q_CIOM26e237CA/exec";
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbxbzzGWuE7_7nzdaN2Z1yRVmJghZbeEU4by0vrGjcbzTJUUTLk0yrnwBW876uM-9JBsLQ/exec";
 
     const params = new URLSearchParams(window.location.search);
-    const month = params.get("month");
-    const day = params.get("day");
-    const buyer = params.get("buyer");
-
-    if (!month || !day || !buyer) {
-      alert("Missing URL parameters: month, day, buyer.");
-    }
+    const po = params.get("po");
+    const type = params.get("type");
 
     let qrScanner;
 
     function startScanner() {
       qrScanner = new Html5Qrcode("reader");
-
       const boxWidth = Math.floor(window.innerWidth * 0.9);
       const boxHeight = Math.floor(boxWidth * 0.25);
 
@@ -89,17 +83,12 @@
           });
         }
       ).catch(err => {
-        const fb = document.getElementById("feedback");
-        fb.innerHTML = "❌\n\nCamera Access Error\n\n" + err;
-        fb.style.color = "red";
+        document.getElementById("feedback").innerHTML = "❌\n\nCamera Error\n\n" + err;
       });
     }
 
     function handleScan(code) {
-      const feedback = document.getElementById("feedback");
-      const nextButton = document.getElementById("nextButton");
-
-      const url = `${GAS_URL}?code=${encodeURIComponent(code)}&month=${month}&day=${day}&buyer=${buyer}`;
+      const url = `${GAS_URL}?code=${encodeURIComponent(code)}&type=${type}&po=${po}`;
 
       fetch(url)
         .then(res => res.text())
@@ -112,13 +101,14 @@
           const scanned = parts[4] || "";
           const total = parts[5] || "";
 
+          const feedback = document.getElementById("feedback");
+          const nextButton = document.getElementById("nextButton");
+
           if (status === "✓") {
-            feedback.innerHTML =
-              `✅\n\nSSCC: ${sscc}\n\nCarton: ${carton}\n\nRow: ${row}\n\nLoading Status: ${scanned} / ${total}`;
+            feedback.innerHTML = `✅\n\nSSCC: ${sscc}\n\nCarton: ${carton}\n\nRow: ${row}\n\nLoading Status: ${scanned} / ${total}`;
             feedback.style.color = "lime";
           } else if (status === "DUP") {
-            feedback.innerHTML =
-              `🔁 DUPLICATE\n\nSSCC: ${sscc}\n\nCarton: ${carton}\n\nRow: ${row}\n\nLoading Status: ${scanned} / ${total}`;
+            feedback.innerHTML = `🔁 DUPLICATE\n\nSSCC: ${sscc}\n\nCarton: ${carton}\n\nRow: ${row}\n\nLoading Status: ${scanned} / ${total}`;
             feedback.style.color = "orange";
           } else {
             feedback.innerHTML = "❌\n\nNot Registered";
@@ -126,25 +116,16 @@
           }
 
           nextButton.style.display = "block";
-        })
-        .catch(() => {
-          feedback.innerHTML = "❌\n\nServer Error";
-          feedback.style.color = "red";
-          nextButton.style.display = "block";
         });
     }
 
     function restartScanner() {
-      const feedback = document.getElementById("feedback");
-      const nextButton = document.getElementById("nextButton");
-      feedback.innerHTML = "";
-      nextButton.style.display = "none";
+      document.getElementById("feedback").innerHTML = "";
+      document.getElementById("nextButton").style.display = "none";
       startScanner();
     }
 
-    window.addEventListener("DOMContentLoaded", () => {
-      startScanner();
-    });
+    window.addEventListener("DOMContentLoaded", startScanner);
   </script>
 </body>
 </html>
