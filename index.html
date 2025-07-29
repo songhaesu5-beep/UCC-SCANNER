@@ -11,7 +11,6 @@
       text-align: center;
       padding-top: 100px;
     }
-
     input, select, button {
       font-size: 2em;
       padding: 10px;
@@ -19,13 +18,11 @@
       border-radius: 10px;
       border: none;
     }
-
     button {
       background-color: #4CAF50;
       color: white;
       cursor: pointer;
     }
-
     button:hover {
       background-color: #45a049;
     }
@@ -34,47 +31,29 @@
 <body>
   <h1>📦 UCC SCANNER Setup</h1>
 
-  <label for="month">Month:</label>
-  <input type="number" id="month" min="1" max="12" required>
+  <label for="type">Type:</label>
+  <select id="type">
+    <option value="Inbound">Inbound</option>
+    <option value="Outbound">Outbound</option>
+  </select>
 
-  <label for="day">Day:</label>
-  <input type="number" id="day" min="1" max="31" required>
-
-  <label for="buyer">Buyer:</label>
-  <select id="buyer">
-  <option value="ADI">ADI</option>
-  <option value="CAR">CAR</option>
-  <option value="CBK">CBK</option>
-  <option value="COH">COH</option>
-  <option value="COX">COX</option>
-  <option value="ESP">ESP</option>
-  <option value="KSP">KSP</option>
-  <option value="KUU">KUU</option>
-  <option value="LLB&LLC">LLB&amp;LLC</option>
-  <option value="LLM">LLM</option>
-  <option value="MKS">MKS</option>
-  <option value="MMJ">MMJ</option>
-  <option value="MUJI">MUJI</option>
-  <option value="REI">REI</option>
-  <option value="TNF">TNF</option>
-</select>
-
+  <label for="po">P/O:</label>
+  <input type="text" id="po" placeholder="e.g. 4516365821" required>
 
   <br><br>
   <button onclick="startScanner()">▶ Start Scanning</button>
 
   <script>
     function startScanner() {
-      const month = document.getElementById("month").value;
-      const day = document.getElementById("day").value;
-      const buyer = document.getElementById("buyer").value;
+      const type = document.getElementById("type").value;
+      const po = document.getElementById("po").value;
 
-      if (!month || !day || !buyer) {
-        alert("Please enter Month, Day, and select a Buyer.");
+      if (!type || !po) {
+        alert("Please fill in all fields.");
         return;
       }
 
-      const query = `month=${month}&day=${day}&buyer=${buyer}`;
+      const query = `type=${type}&po=${po}`;
       window.location.href = `scanner.html?${query}`;
     }
   </script>
