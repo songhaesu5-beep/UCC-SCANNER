@@ -14,27 +14,27 @@
       font-family: sans-serif;
     }
 
+    /* ✅ 고정 상단 표시용 오버레이 */
+    #infoOverlay {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      font-size: 2em;
+      font-weight: bold;
+      color: white;
+      background-color: rgba(0, 0, 0, 0.7);
+      padding: 12px 24px;
+      border-radius: 12px;
+      z-index: 99999;
+      white-space: pre-line;
+      pointer-events: none;
+    }
+
     #reader {
       width: 100vw;
       height: 100vh;
       position: relative;
     }
-
-    #infoOverlay {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  font-size: 2em;
-  font-weight: bold;
-  color: #ffffff;
-  background-color: rgba(0, 0, 0, 0.7);
-  padding: 12px 24px;
-  border-radius: 12px;
-  z-index: 99999;
-  white-space: pre-line;
-  display: block;
-  pointer-events: none; /* ← 클릭 막지 않도록 */
-}
 
     #feedback {
       position: absolute;
@@ -86,10 +86,11 @@
   </style>
 </head>
 <body>
-  <div id="reader">
-    <!-- ✅ 여기에 Type/P/O 현황 표시 -->
-    <div id="infoOverlay"></div>
-  </div>
+  <!-- ✅ 고정 상단 표시 (QR 스캐너 밖) -->
+  <div id="infoOverlay"></div>
+
+  <!-- ✅ QR 스캐너 -->
+  <div id="reader"></div>
 
   <div id="feedback"></div>
   <button id="nextButton" onclick="restartScanner()">NEXT</button>
@@ -161,9 +162,7 @@
 
     window.addEventListener("DOMContentLoaded", () => {
       startScanner();
-      alert(`Type = ${type}, PO = ${po}`);
 
-      // ✅ Type & P/O 상단에 표시
       const overlay = document.getElementById("infoOverlay");
       overlay.textContent = `Type: ${type}\nP/O: ${po}`;
     });
