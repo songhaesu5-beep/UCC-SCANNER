@@ -76,7 +76,7 @@
   <button id="homeButton" onclick="goHome()">HOME</button>
 
   <script>
-    const GAS_URL = "https://script.google.com/macros/s/AKfycby6rn6bWXFg1RjVhmzP41NiixlStUgKl4EUmoJQcIUtJK-Jbf5hv3xT7kNGyA74LjAXRg/exec"; // ← 여기에 본인 Web App URL
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbylsTfUfc6UE6vjtLDwCPxdo7HSmB4DJTybzsCqeWMU0mcrsFun4fQkr-ewzmtXBzt25w/exec";
 
     const params = new URLSearchParams(window.location.search);
     const po = params.get("po");
@@ -105,9 +105,9 @@
     function handleScan(code) {
       const url = `${GAS_URL}?code=${encodeURIComponent(code)}&type=${type}&po=${po}`;
       fetch(url)
-        .then(res => res.text())
+        .then(res => res.json())
         .then(result => {
-          const [status, row, sscc, , extraStatus] = result.split(":");
+          const { status, row, sscc, message } = result;
           const feedback = document.getElementById("feedback");
           const nextButton = document.getElementById("nextButton");
 
@@ -121,7 +121,7 @@
             output = "❌\n\nNot Registered";
           }
 
-          if (extraStatus) output += `\n\n${extraStatus}`;
+          if (message) output += `\n\n${message}`;
 
           feedback.innerHTML = output;
           feedback.style.color = status === "✓" ? "lime" : (status === "DUP" ? "orange" : "red");
