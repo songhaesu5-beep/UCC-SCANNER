@@ -46,14 +46,14 @@
   <script>
     function startScanner() {
       const type = document.getElementById("type").value;
-      const po = document.getElementById("po").value;
+      const po = document.getElementById("po").value.trim();
 
       if (!type || !po) {
         alert("Please fill in all fields.");
         return;
       }
 
-      const query = `type=${type}&po=${po}`;
+      const query = `type=${type}&po=${encodeURIComponent(po)}`;
       window.location.href = `scanner.html?${query}`;
     }
   </script>
