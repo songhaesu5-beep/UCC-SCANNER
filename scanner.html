@@ -8,23 +8,23 @@
     html, body {
       margin: 0;
       padding: 0;
-      overflow: hidden;
-      height: 100%;
       background: black;
+      color: white;
       font-family: sans-serif;
+      height: 100%;
+      overflow: hidden;
     }
 
     #infoOverlay {
       position: fixed;
       top: 20px;
       left: 20px;
-      font-size: 2em;
+      font-size: 1.8em;
       font-weight: bold;
-      color: white;
-      background-color: rgba(0, 0, 0, 0.7);
-      padding: 12px 24px;
+      background: rgba(0,0,0,0.6);
+      padding: 12px 20px;
       border-radius: 12px;
-      z-index: 99999;
+      z-index: 9999;
       white-space: pre-line;
       pointer-events: none;
     }
@@ -40,47 +40,36 @@
       top: 30%;
       left: 50%;
       transform: translate(-50%, -50%);
-      font-size: 4.5em;
+      font-size: 4em;
       font-weight: bold;
-      color: white;
-      z-index: 1000;
       text-align: center;
+      z-index: 1000;
       text-shadow: 2px 2px 8px black;
       white-space: pre-line;
     }
 
-    #nextButton {
+    #nextButton, #homeButton {
       position: absolute;
-      bottom: 15%;
-      left: 50%;
-      transform: translateX(-50%);
-      padding: 20px 40px;
-      font-size: 2em;
-      background-color: #333;
+      font-size: 1.5em;
+      padding: 16px 30px;
+      background-color: #444;
       color: white;
       border: none;
-      border-radius: 12px;
+      border-radius: 10px;
       cursor: pointer;
       z-index: 1001;
+    }
+
+    #nextButton {
+      bottom: 18%;
+      left: 50%;
+      transform: translateX(-50%);
       display: none;
     }
 
-    #nextButton:hover {
-      background-color: #555;
-    }
-
     #homeButton {
-      position: absolute;
       bottom: 5%;
       right: 5%;
-      padding: 20px 30px;
-      font-size: 1.5em;
-      background-color: #555;
-      color: white;
-      border: none;
-      border-radius: 12px;
-      cursor: pointer;
-      z-index: 1002;
     }
   </style>
 </head>
@@ -93,69 +82,61 @@
 
   <script>
     const GAS_URL = "https://script.google.com/macros/s/AKfycbylsTfUfc6UE6vjtLDwCPxdo7HSmB4DJTybzsCqeWMU0mcrsFun4fQkr-ewzmtXBzt25w/exec";
-
     const params = new URLSearchParams(window.location.search);
     const po = params.get("po");
     const type = params.get("type");
 
-    let qrScanner;
+    const feedback = document.getElementById("feedback");
+    const nextButton = document.getElementById("nextButton");
+
+    function showFeedback(msg, color) {
+      feedback.innerText = msg;
+      feedback.style.color = color;
+      nextButton.style.display = "block";
+    }
+
+    function handleScan(code) {
+      if (type === "Inbound" && !/^\d{20}$/.test(code)) {
+        showFeedback("❌\n\nInvalid Code", "red");
+        return;
+      }
+
+      const url = `${GAS_URL}?code=${encodeURIComponent(code)}&type=${type}&po=${po}`;
+      fetch(url)
+        .then(res => res.json())
+        .then(({ status, row, sscc, message }) => {
+          let text = "";
+          if (status === "✓") {
+            text = `✅\n\nSSCC: ${sscc}\n\nRow: ${row}`;
+          } else if (status === "DUP") {
+            text = `🔁 DUPLICATE\n\nSSCC: ${sscc}\n\nRow: ${row}`;
+          } else {
+            text = "❌\n\nNot Registered";
+          }
+          if (message) text += `\n\n${message}`;
+          showFeedback(text, status === "✓" ? "lime" : status === "DUP" ? "orange" : "red");
+        });
+    }
 
     function startScanner() {
-      qrScanner = new Html5Qrcode("reader");
+      const scanner = new Html5Qrcode("reader");
       const boxWidth = Math.floor(window.innerWidth * 0.9);
       const boxHeight = Math.floor(boxWidth * 0.25);
 
-      qrScanner.start(
+      scanner.start(
         { facingMode: { exact: "environment" } },
         { fps: 15, qrbox: { width: boxWidth, height: boxHeight } },
         code => {
-          qrScanner.stop().then(() => {
-            // ✅ Inbound일 때만 18자리 숫자 검사
-            if (type === "Inbound" && !/^\d{18}$/.test(code)) {
-              showFeedback("❌\n\nInvalid Code", "red");
-              return;
-            }
-            handleScan(code);
-          });
+          scanner.stop().then(() => handleScan(code));
         }
       ).catch(err => {
         showFeedback("❌\n\nCamera Error\n\n" + err, "red");
       });
     }
 
-    function handleScan(code) {
-      const url = `${GAS_URL}?code=${encodeURIComponent(code)}&type=${type}&po=${po}`;
-      fetch(url)
-        .then(res => res.json())
-        .then(result => {
-          const { status, row, sscc, message } = result;
-          let output = "";
-
-          if (status === "✓") {
-            output = `✅\n\nSSCC: ${sscc}\n\nRow: ${row}`;
-          } else if (status === "DUP") {
-            output = `🔁 DUPLICATE\n\nSSCC: ${sscc}\n\nRow: ${row}`;
-          } else {
-            output = "❌\n\nNot Registered";
-          }
-
-          if (message) output += `\n\n${message}`;
-
-          showFeedback(output, status === "✓" ? "lime" : status === "DUP" ? "orange" : "red");
-        });
-    }
-
-    function showFeedback(text, color) {
-      const feedback = document.getElementById("feedback");
-      const nextButton = document.getElementById("nextButton");
-      feedback.innerHTML = text;
-      feedback.style.color = color;
-      nextButton.style.display = "block";
-    }
-
     function restartScanner() {
-      document.getElementById("feedback").innerHTML = "";
-      document.getElementById("nextButton").style.display = "none";
+      feedback.innerHTML = "";
+      nextButton.style.display = "none";
       startScanner();
     }
 
@@ -163,10 +144,10 @@
       window.location.href = "index.html";
     }
 
+    // 초기 실행
     window.addEventListener("DOMContentLoaded", () => {
       startScanner();
-      const overlay = document.getElementById("infoOverlay");
-      overlay.textContent = `Type: ${type}\nP/O: ${po}`;
+      document.getElementById("infoOverlay").innerText = `Type: ${type}\nP/O: ${po}`;
     });
   </script>
 </body>
