@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>UCC SCANNER Setup</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     html, body {
       margin: 0;
@@ -17,33 +18,41 @@
     }
 
     #container {
+      width: 90%;
+      max-width: 400px;
       text-align: center;
     }
 
     h1 {
-      font-size: 3em;
-      margin-bottom: 40px;
+      font-size: 2.2em;
+      margin-bottom: 30px;
     }
 
     label {
-      font-size: 2em;
+      font-size: 1.5em;
       display: block;
-      margin: 20px 0 10px;
+      margin: 20px 0 8px;
+      text-align: left;
     }
 
     input, select, button {
-      font-size: 2em;
-      padding: 15px 20px;
-      margin: 10px;
-      border-radius: 12px;
+      font-size: 1.3em;
+      padding: 12px 15px;
+      margin: 5px 0 20px;
+      border-radius: 10px;
       border: none;
-      width: 90%;
-      max-width: 400px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    input::placeholder {
+      color: #aaa;
     }
 
     button {
       background-color: #4CAF50;
       color: white;
+      font-weight: bold;
       cursor: pointer;
     }
 
@@ -65,7 +74,6 @@
     <label for="po">P/O:</label>
     <input type="text" id="po" placeholder="e.g. 4516365821" required>
 
-    <br><br>
     <button onclick="startScanner()">▶ Start Scanning</button>
   </div>
 
