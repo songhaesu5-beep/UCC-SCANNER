@@ -4,44 +4,70 @@
   <meta charset="UTF-8">
   <title>UCC SCANNER Setup</title>
   <style>
-    body {
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
       background-color: black;
       color: white;
       font-family: sans-serif;
-      text-align: center;
-      padding-top: 100px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
+
+    #container {
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 3em;
+      margin-bottom: 40px;
+    }
+
+    label {
+      font-size: 2em;
+      display: block;
+      margin: 20px 0 10px;
+    }
+
     input, select, button {
       font-size: 2em;
-      padding: 10px;
+      padding: 15px 20px;
       margin: 10px;
-      border-radius: 10px;
+      border-radius: 12px;
       border: none;
+      width: 90%;
+      max-width: 400px;
     }
+
     button {
       background-color: #4CAF50;
       color: white;
       cursor: pointer;
     }
+
     button:hover {
       background-color: #45a049;
     }
   </style>
 </head>
 <body>
-  <h1>📦 UCC SCANNER Setup</h1>
+  <div id="container">
+    <h1>📦 UCC SCANNER</h1>
 
-  <label for="type">Type:</label>
-  <select id="type">
-    <option value="Inbound">Inbound</option>
-    <option value="Outbound">Outbound</option>
-  </select>
+    <label for="type">Type:</label>
+    <select id="type">
+      <option value="Inbound">Inbound</option>
+      <option value="Outbound">Outbound</option>
+    </select>
 
-  <label for="po">P/O:</label>
-  <input type="text" id="po" placeholder="e.g. 4516365821" required>
+    <label for="po">P/O:</label>
+    <input type="text" id="po" placeholder="e.g. 4516365821" required>
 
-  <br><br>
-  <button onclick="startScanner()">▶ Start Scanning</button>
+    <br><br>
+    <button onclick="startScanner()">▶ Start Scanning</button>
+  </div>
 
   <script>
     function startScanner() {
