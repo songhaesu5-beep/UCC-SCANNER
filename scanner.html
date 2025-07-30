@@ -65,6 +65,10 @@
       display: none;
     }
 
+    #nextButton:hover {
+      background-color: #555;
+    }
+
     #homeButton {
       position: absolute;
       bottom: 5%;
@@ -89,6 +93,7 @@
 
   <script>
     const GAS_URL = "https://script.google.com/macros/s/AKfycbylsTfUfc6UE6vjtLDwCPxdo7HSmB4DJTybzsCqeWMU0mcrsFun4fQkr-ewzmtXBzt25w/exec";
+
     const params = new URLSearchParams(window.location.search);
     const po = params.get("po");
     const type = params.get("type");
@@ -105,7 +110,8 @@
         { fps: 15, qrbox: { width: boxWidth, height: boxHeight } },
         code => {
           qrScanner.stop().then(() => {
-            if (!/^\d{18}$/.test(code)) {
+            // ✅ Inbound일 때만 18자리 숫자 검사
+            if (type === "Inbound" && !/^\d{18}$/.test(code)) {
               showFeedback("❌\n\nInvalid Code", "red");
               return;
             }
@@ -134,15 +140,15 @@
           }
 
           if (message) output += `\n\n${message}`;
-          const color = status === "✓" ? "lime" : (status === "DUP" ? "orange" : "red");
-          showFeedback(output, color);
+
+          showFeedback(output, status === "✓" ? "lime" : status === "DUP" ? "orange" : "red");
         });
     }
 
-    function showFeedback(msg, color) {
+    function showFeedback(text, color) {
       const feedback = document.getElementById("feedback");
       const nextButton = document.getElementById("nextButton");
-      feedback.innerHTML = msg;
+      feedback.innerHTML = text;
       feedback.style.color = color;
       nextButton.style.display = "block";
     }
@@ -159,7 +165,8 @@
 
     window.addEventListener("DOMContentLoaded", () => {
       startScanner();
-      document.getElementById("infoOverlay").textContent = `Type: ${type}\nP/O: ${po}`;
+      const overlay = document.getElementById("infoOverlay");
+      overlay.textContent = `Type: ${type}\nP/O: ${po}`;
     });
   </script>
 </body>
