@@ -71,6 +71,17 @@
       bottom: 5%;
       right: 5%;
     }
+
+    /* ✅ 상단 고정 스캔 박스 위치 조정 */
+    #reader > div:first-child {
+      position: absolute !important;
+      top: 15% !important;
+      left: 5% !important;
+      width: 90% !important;
+      height: 25% !important;
+      transform: none !important;
+      box-sizing: border-box !important;
+    }
   </style>
 </head>
 <body>
@@ -121,7 +132,7 @@
     function startScanner() {
       const scanner = new Html5Qrcode("reader");
       const boxWidth = Math.floor(window.innerWidth * 0.9);
-      const boxHeight = Math.floor(boxWidth * 0.25);
+      const boxHeight = Math.floor(boxWidth * 0.25); // 유지
 
       scanner.start(
         { facingMode: { exact: "environment" } },
