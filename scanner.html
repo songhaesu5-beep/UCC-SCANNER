@@ -121,9 +121,9 @@
     function startScanner() {
       const scanner = new Html5Qrcode("reader");
 
-      const boxWidth = Math.floor(window.innerWidth * 0.8);  // 너비 유지
-      const boxHeight = Math.floor(window.innerWidth * 0.25 * 0.67);  // 기존 대비 2/3로 줄임
-      const offsetY = Math.floor(window.innerHeight * 0.15); // 상단 고정 위치
+      const boxWidth = Math.floor(window.innerWidth * 0.8);     // 너비: 화면의 80%
+      const boxHeight = Math.floor(window.innerWidth * 0.25 * 0.33);  // 기존 높이의 1/3로 줄이기
+      const offsetY = Math.floor(window.innerHeight * 0.15);     // 상단 위치 고정
 
       const qrRegion = {
         width: boxWidth,
